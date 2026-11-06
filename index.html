@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Wand-Dashboard</title>
+<style>
+html,body{margin:0;height:100%;background:#0c0e13;color:#f2f3f5;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:hidden;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+#app{box-sizing:border-box;height:100%;display:grid;grid-template-columns:1fr 1fr;grid-gap:2vmin;padding:2.5vmin}
+body.night #app{-webkit-filter:brightness(.5);filter:brightness(.5)}
+.col{display:flex;flex-direction:column;min-width:0;min-height:0}
+.col>*+*{margin-top:2vmin}
+.card{border-radius:3.4vmin;padding:2.2vmin 2.4vmin;min-height:0;min-width:0;display:flex;flex-direction:column;justify-content:center;overflow:hidden;border:1px solid transparent}
+.card.top{justify-content:flex-start}
+.c-w{background:#10202e;border-color:#1f4260}
+.c-n{background:#2a1f12;border-color:#4a3418}
+.c-c{background:#1e1830;border-color:#382d5a}
+.c-s{background:#0e2a22;border-color:#17503f}
+.ck{flex:0 0 auto;padding:.4vmin .4vmin 1.6vmin}
+#gr{font-size:3.4vmin;color:#FBBF24;line-height:1.25}
+.big{font-size:16vmin;letter-spacing:-.6vmin;line-height:1.05;white-space:nowrap}
+.co{color:#FF6B6B}
+#dt{font-size:2.8vmin;color:#8b919c;margin-top:.4vmin}
+.row{display:flex;align-items:center}
+.badge{width:8.6vmin;height:8.6vmin;border-radius:50%;background:#1c3d5a;display:flex;align-items:center;justify-content:center;font-size:4.8vmin;flex:none;margin-right:1.6vmin}
+.tmp{font-size:7.5vmin;line-height:1;color:#e6f4ff;margin-right:1.8vmin}
+#wd{font-size:2.7vmin;line-height:1.35;color:#8fb8d6}
+.pill{display:inline-block;border-radius:2.4vmin;padding:.8vmin 1.8vmin;margin:1.6vmin 1.2vmin 0 0;font-size:2.9vmin;white-space:nowrap}
+.pill.b{background:#1c3d5a;color:#bfe3fa}
+.pill.y{background:#3b3416;color:#fde68a}
+.nh{display:flex;justify-content:space-between;align-items:center}
+#nl{font-size:2.7vmin;color:#F5A524}
+#ni i{display:inline-block;width:1.2vmin;height:1.2vmin;border-radius:50%;background:#5a4421;margin-left:.9vmin}
+#ni i.on{background:#F5A524}
+#news{position:relative;flex:1;min-height:0;overflow:hidden;margin-top:1vmin;font-size:2.8vmin}
+#news .grp{position:absolute;left:0;right:0;top:0;opacity:0;pointer-events:none;-webkit-transition:opacity .8s;transition:opacity .8s}
+#news .grp.on{opacity:1;pointer-events:auto}
+#news a{display:flex;color:#f4e9d8;text-decoration:none;font-size:1em;line-height:1.3;padding:1.2vmin 0;border-bottom:1px solid #4a3418}
+#news a:last-child{border-bottom:none}
+#news a span:last-child{flex:1;min-width:0}
+.num{width:3.4vmin;height:3.4vmin;border-radius:50%;background:#F5A524;color:#2a1f12;font-size:.8em;line-height:3.4vmin;text-align:center;flex:none;margin:.2vmin 1.4vmin 0 0}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:1vmin}
+#mt{font-size:3.6vmin;color:#e9e2ff}
+#ib{font-size:2.3vmin;color:#c9b9ff;background:#33295a;border-radius:2.4vmin;padding:.6vmin 1.6vmin}
+#cg{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:auto repeat(6,1fr)}
+#cg .h{text-align:center;font-size:2.4vmin;color:#a99bd6;padding-bottom:.6vmin}
+#cg .d{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:3.1vmin;line-height:1.2;color:#f2eefc}
+#cg .d.w{color:#e79bc7}
+#cg .d i{display:block;width:1.1vmin;height:1.1vmin;border-radius:50%;margin-top:.3vmin}
+#cg .d i.t{background:#2DD4BF}
+#cg .d i.p{background:#F472B6}
+#cg .d b{font-weight:500;width:4.6vmin;height:4.6vmin;line-height:4.6vmin;border-radius:50%;background:#FF6B6B;color:#fff;text-align:center}
+.cov{width:13vmin;height:13vmin;border-radius:50%;background:#34D399;display:flex;align-items:center;justify-content:center;flex:none;margin-right:2.2vmin;overflow:hidden}
+.cov svg{width:6vmin;height:6vmin;fill:#04342C}
+.cov img{width:100%;height:100%;display:block}
+.ti{font-size:3.5vmin;line-height:1.25;color:#d5f7e9}
+#sa{font-size:2.7vmin;line-height:1.3;color:#6fb59d}
+#sc{display:none;margin-top:1vmin;color:#34D399;font-size:2.7vmin}
+.bar{height:1vmin;border-radius:.5vmin;background:#17503f;margin:2.6vmin 0 2vmin}
+#pg{display:block;height:100%;width:0;border-radius:.5vmin;background:#34D399}
+.ctl{display:flex;justify-content:center;align-items:center;color:#6fb59d}
+.ctl svg{width:5vmin;height:5vmin;fill:currentColor;margin:0 3.2vmin;cursor:pointer}
+.ctl .pl{width:9vmin;height:9vmin;border-radius:50%;background:#17503f;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ctl .pl svg{margin:0;width:4.6vmin;height:4.6vmin}
+.ctl.on{color:#d5f7e9}
+.ctl.on .pl{background:#34D399;color:#04342C}
+</style>
+</head>
+<body>
+<script>window.onerror=function(m,u,l){var g=document.getElementById("gr");if(g){g.style.color="#FF6B6B";g.textContent="Fehler: "+m+" (Zeile "+l+")"}};</script>
+<div id="app">
+ <div class="col">
+  <div class="ck"><div id="gr">Lädt …</div><div id="clk" class="big">--<span class="co">:</span>--</div><div id="dt"></div><noscript><div style="color:#FF6B6B">JavaScript ist ausgeschaltet. Bitte im Browser einschalten.</div></noscript></div>
+  <div class="card c-w" style="flex:1">
+   <div class="row"><span id="wi" class="badge"></span><span id="t" class="tmp">–°</span><span id="wd"></span></div>
+   <div id="fc"></div>
+  </div>
+  <div class="card c-n top" style="flex:2.2"><div class="nh"><span id="nl">Nachrichten</span><span id="ni"></span></div><div id="news"></div></div>
+ </div>
+ <div class="col">
+  <div class="card c-c top" style="flex:1.25">
+   <div class="hd"><span id="mt"></span><span id="ib">ICS laden</span></div>
+   <div id="cg"></div>
+  </div>
+  <div class="card c-s" style="flex:1.1">
+   <div class="row">
+    <div class="cov" id="cov"><svg viewBox="0 0 24 24"><path d="M9 3v12.3A3.5 3.5 0 1 0 11 18.5V8h6V3z"/></svg></div>
+    <div style="min-width:0"><div class="ti" id="st">Spotify</div><div id="sa"></div><div id="sc">Mit Spotify verbinden</div></div>
+   </div>
+   <div class="bar"><i id="pg"></i></div>
+   <div class="ctl" id="ct">
+    <svg id="pv" viewBox="0 0 24 24"><path d="M6 6h2v12H6zM20 6v12L9 12z"/></svg>
+    <div class="pl" id="pp"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+    <svg id="nt" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM4 6l11 6-11 6z"/></svg>
+   </div>
+  </div>
+ </div>
+</div>
+<input type="file" id="f" accept=".ics,text/calendar" style="display:none">
+<script>
+(function(){
+// ===== EINSTELLUNGEN =====
+var CFG={name:'Pascal',lat:50.83,lon:12.92,ort:'Chemnitz',
+ feed:'https://www.tagesschau.de/index~rss2.xml',
+ spotifyClientId:'' /* hier die Client-ID aus dem Spotify-Dashboard eintragen */};
+// ==========================
+var D=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+var M=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+var GR={m:['Guten Morgen, N.','Guten Morgen, N. Ein neuer Tag, neue Möglichkeiten.','Schönen guten Morgen, N.','Morgen, N. Auf einen guten Start.'],
+ t:['Guten Tag, N.','Schön, dass du da bist, N.','Willkommen zurück, N.','Alles im Blick, N.'],
+ a:['Guten Abend, N.','Der Abend gehört dir, N.','Willkommen zurück. Mach es dir gemütlich.','Schönen Feierabend, N.'],
+ n:['Gute Nacht, N.','Schlaf gut, N.','Gute Nacht. Bis morgen, N.']};
+function $(i){return document.getElementById(i)}
+function p(n){return n<10?'0'+n:''+n}
+function off(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n)}
+function ld(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+var ICS=ld('ics')||[],H={},lastDay=-1;
+
+/* ---- Feiertage Sachsen ---- */
+function easter(y){var a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=(h+l-7*m+114)%31+1;return new Date(y,mo-1,da)}
+function hol(y){
+ function add(d,n){H[y+'-'+(d.getMonth()+1)+'-'+d.getDate()]=n}
+ add(new Date(y,0,1),'Neujahr');add(new Date(y,4,1),'Tag der Arbeit');add(new Date(y,9,3),'Tag der Deutschen Einheit');
+ add(new Date(y,9,31),'Reformationstag');add(new Date(y,11,25),'1. Weihnachtstag');add(new Date(y,11,26),'2. Weihnachtstag');
+ var e=easter(y);add(off(e,-2),'Karfreitag');add(e,'Ostersonntag');add(off(e,1),'Ostermontag');add(off(e,39),'Christi Himmelfahrt');add(off(e,49),'Pfingstsonntag');add(off(e,50),'Pfingstmontag');
+ var b=new Date(y,10,22);while(b.getDay()!==3)b=off(b,-1);add(b,'Buß- und Bettag');
+}
+function evOn(d){
+ var y=d.getFullYear(),k=(d.getMonth()+1)+'-'+d.getDate(),r=[];
+ if(H[y+'-'+k])r.push(H[y+'-'+k]);
+ ICS.forEach(function(e){var q=e.d.split('-');var hit=e.y?((+q[1])+'-'+(+q[2])===k):(+q[0]===y&&(+q[1])+'-'+(+q[2])===k);if(hit)r.push((e.t?e.t+' ':'')+(e.s||'Termin'))});
+ return r;
+}
+function cal(){
+ var n=new Date(),y=n.getFullYear(),m=n.getMonth();hol(y);hol(y+1);
+ $('mt').textContent=M[m]+' '+y;
+ var h='';'MDMDFSS'.split('').forEach(function(l){h+='<div class="h">'+l+'</div>'});
+ var o=(new Date(y,m,1).getDay()+6)%7,dim=new Date(y,m+1,0).getDate(),i;
+ for(i=0;i<o;i++)h+='<div></div>';
+ for(i=1;i<=dim;i++){var c=(o+i-1)%7,dd=new Date(y,m,i);h+='<div class="d'+(c>4?' w':'')+'">'+(i===n.getDate()?'<b>'+i+'</b>':i)+(evOn(dd).length?'<i class="'+(H[y+'-'+(m+1)+'-'+i]?'t':'p')+'"></i>':'')+'</div>'}
+ $('cg').innerHTML=h;
+}
+function parseICS(t){
+ var L=t.replace(/\r/g,'').replace(/\n[ \t]/g,'').split('\n'),out=[],c=null;
+ L.forEach(function(l){
+  if(l==='BEGIN:VEVENT')c={};
+  else if(l==='END:VEVENT'){if(c&&c.d)out.push(c);c=null}
+  else if(c){var k=l.split(':')[0].split(';')[0],v=l.substring(l.indexOf(':')+1);
+   if(k==='SUMMARY')c.s=v;
+   if(k==='DTSTART'){c.d=v.substr(0,4)+'-'+parseInt(v.substr(4,2),10)+'-'+parseInt(v.substr(6,2),10);if(v.length>9&&v.slice(-1)!=='Z')c.t=v.substr(9,2)+':'+v.substr(11,2)}
+   if(k==='RRULE'&&v.indexOf('FREQ=YEARLY')>-1)c.y=1}
+ });
+ return out;
+}
+$('ib').onclick=function(){$('f').click()};
+$('f').onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){ICS=parseICS(r.result);sv('ics',ICS);cal()};r.readAsText(f)};
+
+/* ---- Uhr und Begrüßung ---- */
+function tick(){
+ var d=new Date(),h=d.getHours(),k=h<5?'n':h<11?'m':h<18?'t':h<22?'a':'n',L=GR[k];
+ var doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);
+ $('gr').textContent=L[(doy+h)%L.length].replace(/N\./g,CFG.name+'.').replace(/N,/g,CFG.name+',');
+ $('clk').innerHTML=p(h)+'<span class="co">:</span>'+p(d.getMinutes());
+ $('dt').textContent=D[d.getDay()]+', '+d.getDate()+'. '+M[d.getMonth()]+' '+d.getFullYear();
+ document.body.className=(h>=22||h<6)?'night':'';
+ if(d.getDate()!==lastDay){lastDay=d.getDate();cal()}
+}
+
+/* ---- Wetter ---- */
+function ic(c){return c===0?'☀️':c<3?'⛅':c===3?'☁️':c<50?'🌫️':c<70?'🌧️':c<80?'❄️':c<90?'🌦️':'⛈️'}
+function ds(c){return c===0?'Klar':c<3?'Heiter':c===3?'Bewölkt':c<50?'Nebel':c<70?'Regen':c<80?'Schnee':c<90?'Schauer':'Gewitter'}
+function showWx(j){
+ var c=j.current;
+ $('wi').textContent=ic(c.weather_code);
+ $('t').textContent=Math.round(c.temperature_2m)+'°';
+ $('wd').innerHTML=CFG.ort+'<br>'+ds(c.weather_code)+', gefühlt '+Math.round(c.apparent_temperature)+'°, Wind '+Math.round(c.wind_speed_10m)+' km/h';
+ var h='';
+ for(var i=1;i<=2;i++){var dt=new Date(j.daily.time[i]+'T12:00:00');h+='<span class="pill '+(i===1?'b':'y')+'">'+D[dt.getDay()].substr(0,2)+' '+ic(j.daily.weather_code[i])+' '+Math.round(j.daily.temperature_2m_max[i])+'°</span>'}
+ $('fc').innerHTML=h;
+}
+function wx(){
+ var u='https://api.open-meteo.com/v1/forecast?latitude='+CFG.lat+'&longitude='+CFG.lon+'&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max&timezone=Europe%2FBerlin&forecast_days=3';
+ fetch(u).then(function(r){return r.json()}).then(function(j){sv('wx',j);showWx(j)}).catch(function(){var s=ld('wx');if(s)showWx(s);else $('wd').textContent='Wetter nicht erreichbar'});
+}
+
+/* ---- Nachrichten: 6 Meldungen, 3 Zweiergruppen, alle 8 s ---- */
+var GRP=[],gi=0;
+function dots(){var h='';for(var i=0;i<GRP.length;i++)h+='<i'+(i===gi?' class="on"':'')+'></i>';$('ni').innerHTML=h}
+function fit(){
+ var b=$('news'),k,j,ok;
+ for(k=2.9;k>=1.7;k-=.1){
+  b.style.fontSize=k+'vmin';ok=true;
+  for(j=0;j<GRP.length;j++){if(GRP[j].offsetHeight>b.clientHeight){ok=false;break}}
+  if(ok)break;
+ }
+}
+function showNews(items,offl){
+ var seen={},u=[],h='',i,nn=0;
+ items.forEach(function(x){var k=(x.title||'').toLowerCase().replace(/[^a-z0-9äöüß]/g,'');if(k&&!seen[k]&&u.length<6){seen[k]=1;u.push(x)}});
+ function a(x){nn++;return '<a href="'+esc(x.link)+'" target="_blank"><span class="num">'+nn+'</span><span>'+esc(x.title)+'</span></a>'}
+ for(i=0;i<u.length;i+=2)h+='<div class="grp">'+a(u[i])+(u[i+1]?a(u[i+1]):'')+'</div>';
+ $('news').innerHTML=h;GRP=$('news').children;gi=0;
+ if(GRP.length)GRP[0].className='grp on';
+ $('nl').textContent='Nachrichten'+(offl?' (offline)':'');dots();fit();
+}
+function rot(){if(GRP.length<2)return;GRP[gi].className='grp';gi=(gi+1)%GRP.length;GRP[gi].className='grp on';dots()}
+function nw(){
+ var u='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(CFG.feed);
+ fetch(u).then(function(r){return r.json()}).then(function(j){if(!j.items)throw 0;sv('nw',j.items);showNews(j.items,false)}).catch(function(){var s=ld('nw');if(s)showNews(s,true);else $('news').innerHTML='<a><span>Nachrichten nicht erreichbar. Bitte Internet prüfen.</span></a>'});
+}
+
+/* ---- Spotify (PKCE, steuert das aktive Gerät, z. B. das iPhone) ---- */
+var RU=location.origin+location.pathname,T=ld('spt'),SPOK=false;
+function rnd(n){var a=new Uint8Array(n);crypto.getRandomValues(a);var s='';for(var i=0;i<n;i++)s+=('0'+a[i].toString(16)).slice(-2);return s}
+function b64(buf){var s='',a=new Uint8Array(buf);for(var i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function form(o){var s=[];for(var k in o)s.push(k+'='+encodeURIComponent(o[k]));return s.join('&')}
+function tokenReq(o){return fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:form(o)}).then(function(r){return r.json()}).then(function(j){if(!j.access_token)throw 0;T={a:j.access_token,r:j.refresh_token||(T&&T.r),e:Date.now()+j.expires_in*1000};sv('spt',T);return T.a})}
+function tok(){
+ if(T&&T.e>Date.now()+30000)return Promise.resolve(T.a);
+ if(T&&T.r)return tokenReq({grant_type:'refresh_token',refresh_token:T.r,client_id:CFG.spotifyClientId});
+ return Promise.reject();
+}
+function spLogin(){
+ var v=rnd(32);sv('spv',v);
+ crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)).then(function(h){
+  location.href='https://accounts.spotify.com/authorize?response_type=code&client_id='+CFG.spotifyClientId+'&scope='+encodeURIComponent('user-read-playback-state user-modify-playback-state user-read-currently-playing')+'&redirect_uri='+encodeURIComponent(RU)+'&code_challenge_method=S256&code_challenge='+b64(h);
+ });
+}
+function api(path,method){
+ return tok().then(function(a){return fetch('https://api.spotify.com/v1/me/player'+path,{method:method||'GET',headers:{Authorization:'Bearer '+a}})});
+}
+function spUI(title,sub,img,playing,prog,ok){
+ $('st').textContent=title;$('sa').textContent=sub;
+ $('cov').innerHTML=img?'<img src="'+esc(img)+'" alt="">':'<svg viewBox="0 0 24 24"><path d="M9 3v12.3A3.5 3.5 0 1 0 11 18.5V8h6V3z"/></svg>';
+ $('pg').style.width=(prog||0)+'%';
+ $('pp').innerHTML=playing?'<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>':'<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+ $('ct').className='ctl'+(ok?' on':'');SPOK=ok;
+}
+function spPoll(){
+ if(!CFG.spotifyClientId){spUI('Spotify nicht eingerichtet','Client-ID fehlt in der Datei',null,false,0,false);return}
+ if(!T){spUI('Spotify nicht verbunden','',null,false,0,false);$('sc').style.display='block';return}
+ $('sc').style.display='none';
+ api('').then(function(r){
+  if(r.status===204)return spUI('Nichts läuft','Spotify auf dem iPhone starten',null,false,0,false);
+  if(r.status===401||r.status===403){T=null;sv('spt',null);return spPoll()}
+  return r.json().then(function(j){
+   if(!j||!j.item)return spUI('Nichts läuft','Spotify auf dem iPhone starten',null,false,0,false);
+   var it=j.item,im=it.album&&it.album.images&&it.album.images.length?it.album.images[it.album.images.length-1].url:null;
+   var ar=(it.artists||[]).map(function(x){return x.name}).join(', ')||(it.show&&it.show.name)||'';
+   spUI(it.name,ar+(j.device?' · '+j.device.name:''),im,j.is_playing,it.duration_ms?Math.round(j.progress_ms/it.duration_ms*100):0,true);
+  });
+ }).catch(function(){spUI('Spotify nicht erreichbar',T?'Prüfe das WLAN':'',null,false,0,false)});
+}
+function cmd(path,method){if(!SPOK)return;api(path,method).then(function(){setTimeout(spPoll,600)})}
+$('pv').onclick=function(){cmd('/previous','POST')};
+$('nt').onclick=function(){cmd('/next','POST')};
+$('pp').onclick=function(){if(!SPOK)return;var pl=$('pp').innerHTML.indexOf('M6 5h4')>-1;cmd(pl?'/pause':'/play','PUT')};
+$('sc').onclick=spLogin;
+var q=location.search.match(/[?&]code=([^&]+)/);
+if(q&&CFG.spotifyClientId){
+ tokenReq({grant_type:'authorization_code',code:q[1],redirect_uri:RU,client_id:CFG.spotifyClientId,code_verifier:ld('spv')||''}).then(function(){history.replaceState(null,'',RU);spPoll()}).catch(function(){history.replaceState(null,'',RU)});
+}
+
+tick();wx();nw();spPoll();
+setInterval(tick,5000);
+setInterval(rot,8000);
+setInterval(function(){wx();nw()},5400000);
+setInterval(spPoll,5000);
+window.onresize=fit;
+})();
+</script>
+</body>
+</html>
