@@ -1,343 +1,230 @@
 <!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <title>Pascal Wand-Dashboard (Mi Pad 3)</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    body { background-color: #0c0e12; color: #e1e3e8; font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; overflow: hidden; height: 100vh; width: 100vw; }
-    
-    /* Layout Framework */
-    .dashboard-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; padding: 2vmin; }
-    .header-bar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1.5vmin; border-bottom: 1px solid #232730; }
-    .header-title { font-size: 2.4vmin; font-weight: 500; text-transform: uppercase; letter-spacing: 0.15em; color: #8e95a5; }
-    .scene-dots { display: flex; gap: 0.8vmin; }
-    .dot { width: 1.2vmin; height: 1.2vmin; border-radius: 50%; background: #2a2f3d; transition: all 0.3s; }
-    .dot.active { width: 3vmin; border-radius: 1vmin; background: #9db8d9; }
-    
-    .scene-viewport { flex: 1; position: relative; margin-top: 1.5vmin; }
-    .scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; transition: opacity 0.8s ease; display: grid; grid-template-columns: 1fr 1fr; gap: 2vmin; }
-    .scene.active { opacity: 1; pointer-events: auto; }
-    .scene.single { grid-template-columns: 1fr; }
-
-    /* Material Solid Cards (Kein Milchglas, saubere Kanten) */
-    .card { background: #161920; border: 1px solid #262b36; border-radius: 2vmin; padding: 2.2vmin; display: flex; flex-direction: column; }
-    .card-title { font-size: 2.2vmin; text-transform: uppercase; color: #9db8d9; letter-spacing: 0.1em; margin-bottom: 1.2vmin; font-weight: 500; }
-    
-    /* Szene 1: Horoskop & Tarot */
-    .tarot-cards { display: flex; gap: 1.5vmin; height: 100%; }
-    .tarot-card-box { flex: 1; background: #1c202a; border-radius: 1.2vmin; border: 1px solid #2e3544; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1vmin; color: #e3c9a0; }
-    .horo-scroll { overflow-y: auto; display: flex; flex-direction: column; gap: 1vmin; padding-right: 0.5vmin; height: 100%; }
-    .horo-box { background: #1c202a; padding: 1.2vmin; border-radius: 1vmin; border-left: 3px solid #e3c9a0; font-size: 1.9vmin; line-height: 1.4; color: #c5c9d3; }
-    .horo-box h4 { color: #e3c9a0; font-size: 1.9vmin; margin-bottom: 0.4vmin; text-transform: uppercase; }
-
-    /* Szene 2: Nachrichten Grid */
-    .news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5vmin; height: 100%; }
-    .news-item { background: #1c202a; padding: 1.2vmin; border-radius: 1vmin; border: 1px solid #262b36; font-size: 1.8vmin; display: flex; flex-direction: column; justify-content: space-between; }
-    .news-tag { font-size: 1.5vmin; color: #e3a5b4; text-transform: uppercase; font-weight: 500; margin-bottom: 0.5vmin; }
-
-    /* Szene 5: Rezept mit echtem Food-Foto */
-    .recipe-layout { display: flex; gap: 2vmin; height: 100%; }
-    .recipe-img { flex: 1.1; border-radius: 1.5vmin; overflow: hidden; border: 1px solid #262b36; }
-    .recipe-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .recipe-content { flex: 1.9; display: flex; flex-direction: column; gap: 1.2vmin; height: 100%; }
-    .recipe-ingredients { background: #1c202a; padding: 1.2vmin; border-radius: 1vmin; font-size: 1.8vmin; line-height: 1.5; }
-    .recipe-steps { background: #1c202a; padding: 1.2vmin; border-radius: 1vmin; font-size: 1.7vmin; line-height: 1.4; flex: 1; overflow-y: auto; }
-
-    /* Szene 11: Merkzettel & Eingabe */
-    .keyboard { display: grid; grid-template-columns: repeat(10, 1fr); gap: 0.6vmin; margin-top: auto; background: #111318; padding: 1vmin; border-radius: 1vmin; }
-    .key { background: #222836; color: #fff; text-align: center; padding: 1vmin 0; border-radius: 0.5vmin; font-size: 1.8vmin; }
-
-    /* Footer Progress Bar */
-    .progress-bar-container { height: 0.4vmin; background: #1a1d24; width: 100%; margin-top: 1.5vmin; }
-    .progress-bar { height: 100%; background: #9db8d9; width: 0%; transition: width 0.1s linear; }
-  </style>
-</head>
-<body>
-
-<div class="dashboard-container">
-  <div class="header-bar">
-    <div class="header-title" id="scene-title">1. HOROSKOP UND TAROT</div>
-    <div class="scene-dots" id="scene-dots"></div>
-  </div>
-
-  <div class="scene-viewport">
-    <!-- Szene 1: Horoskop & Tarot -->
-    <div class="scene active" id="scene-1">
-      <div class="card">
-        <div class="card-title" style="color:#e3c9a0;">Drei-Karten-Legung (Rider-Waite)</div>
-        <div class="tarot-cards">
-          <div class="tarot-card-box"><b>I. DER MAGIER</b><br><br><small style="color:#a0a4b8;">Situation:<br>Aktive Schaffenskraft & Fokus auf Setup</small></div>
-          <div class="tarot-card-box"><b>X. RAD DES SCHICKSALS</b><br><br><small style="color:#a0a4b8;">Herausforderung:<br>Wandel & Neuausrichtung annehmen</small></div>
-          <div class="tarot-card-box"><b>XVII. DER STERN</b><br><br><small style="color:#a0a4b8;">Rat:<br>Klare Vision & Vertrauen in eigene Pläne</small></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title" style="color:#e3c9a0;">Skorpion • 3. Dekade (Tageshoroskop)</div>
-        <div class="horo-scroll">
-          <div class="horo-box">
-            <h4>Tagesenergie & Transit</h4>
-            Pluto bildet einen starken, harmonischen Winkel zu deiner Geburtssonne (20.11.2001). Deine Intuition ist extrem scharf. Perfekt für tiefgehende technische Analysen und Systemoptimierungen.
-          </div>
-          <div class="horo-box">
-            <h4>Beruf & Projekte</h4>
-            Ausgezeichnete Phase für Eigenbau-Projekte und Code-Architektur. Dein Durchhaltevermögen zahlt sich aus – lass dich von kleinen Hardware-Hürden nicht aufhalten.
-          </div>
-          <div class="horo-box">
-            <h4>Fokus & Mindset</h4>
-            Direkte Kommunikation und klare Ziele bringen dich voran. Vermeide Ablenkungen und konzentriere dich auf das Wesentliche.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Szene 2: Nachrichten -->
-    <div class="scene" id="scene-2">
-      <div class="card" style="grid-column: span 2;">
-        <div class="card-title" style="color:#e3a5b4;">Live-Nachrichten (Themenfelder)</div>
-        <div class="news-grid">
-          <div class="news-item"><div class="news-tag">Technik / Open Source</div><div>CachyOS & Arch Linux: Neue Kernel-Optimierungen für maximale Audio-Low-Latency veröffentlicht.</div><small style="color:#8e95a5;">heise • vor 1 Std.</small></div>
-          <div class="news-item"><div class="news-tag">Netzwerk & Starlink</div><div>Stabile Satellitenverbindungen im Test: Latenzwerte im Chemnitzer Raum konstant niedrig.</div><small style="color:#8e95a5;">Golem • vor 2 Std.</small></div>
-          <div class="news-item"><div class="news-tag">Musik & Hip-Hop</div><div>Studio One & Logic Pro Workflows: Neue VST3-Plugins für Vocal-Chains und Mastering im Fokus.</div><small style="color:#8e95a5;">MDR • vor 3 Std.</small></div>
-          <div class="news-item"><div class="news-tag">Gaming & Retro</div><div>PSP Custom Firmware ARK-4 Updates: MicroSD-Adapter und IPS-Mod im Praxistest.</div><small style="color:#8e95a5;">Tagesschau • vor 4 Std.</small></div>
-          <div class="news-item"><div class="news-tag">Chemnitz & Sachsen</div><div>Regionale Wirtschaft & Industrie-Instandhaltung: Neue Impulse für Fachkräfte in der Region.</div><small style="color:#8e95a5;">MDR Sachsen • vor 5 Std.</small></div>
-          <div class="news-item"><div class="news-tag">Welt & Allgemein</div><div>Globale Entwicklungen im Bereich erneuerbare Energien und autarke Versorgungssysteme.</div><small style="color:#8e95a5;">Reuters • vor 6 Std.</small></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Szene 3: Wetter und Klima -->
-    <div class="scene" id="scene-3">
-      <div class="card">
-        <div class="card-title" style="color:#9db8d9;">Wetter Chemnitz (Open-Meteo)</div>
-        <div style="display:flex; align-items:center; gap:2vmin; margin-bottom:2vmin;">
-          <div style="font-size:6vmin; font-weight:300;">8°C</div>
-          <div><div style="font-size:2.2vmin;">Dankondensation / Bewölkt</div><small style="color:#8e95a5;">Gefühlt 5°C • Wind 8 km/h • Feuchte 78%</small></div>
-        </div>
-        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; flex:1; display:flex; align-items:flex-end; justify-content:space-between; text-align:center;">
-          <div><small>08:00</small><br><b>6°C</b></div><div><small>10:00</small><br><b>7°C</b></div><div><small>12:00</small><br><b>9°C</b></div><div><small>14:00</small><br><b>8°C</b></div><div><small>16:00</small><br><b>7°C</b></div><div><small>18:00</small><br><b>5°C</b></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title" style="color:#9db8d9;">7-Tage-Trend & Klima</div>
-        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:1vmin; text-align:center; margin-top:1vmin;">
-          <div style="background:#1c202a; padding:1vmin; border-radius:1vmin;"><small>Sa</small><br><b>9°C</b><br><small style="color:#8e95a5;">0 mm</small></div>
-          <div style="background:#1c202a; padding:1vmin; border-radius:1vmin;"><small>So</small><br><b>7°C</b><br><small style="color:#8e95a5;">1.2 mm</small></div>
-          <div style="background:#1c202a; padding:1vmin; border-radius:1vmin;"><small>Mo</small><br><b>8°C</b><br><small style="color:#8e95a5;">0 mm</small></div>
-          <div style="background:#1c202a; padding:1vmin; border-radius:1vmin;"><small>Di</small><br><b>9°C</b><br><small style="color:#8e95a5;">0 mm</small></div>
-          <div style="background:#1c202a; padding:1vmin; border-radius:1vmin;"><small>Mi</small><br><b>7°C</b><br><small style="color:#8e95a5;">0.4 mm</small></div>
-        </div>
-        <div style="margin-top:auto; font-size:1.6vmin; color:#8e95a5; text-align:right;">Quelle: Open-Meteo.com</div>
-      </div>
-    </div>
-
-    <!-- Szene 4: WLAN und Starlink -->
-    <div class="scene" id="scene-4">
-      <div class="card" style="display:flex; align-items:center; justify-content:center; text-align:center;">
-        <div class="card-title">Verbindungsqualität</div>
-        <div style="font-size:7vmin; color:#9cc5b0; font-weight:300; margin:1vmin 0;">99.9%</div>
-        <div style="font-size:2vmin; color:#8e95a5;">Stabiler Tablet-Netzwerkstatus & Ping</div>
-      </div>
-      <div class="card" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5vmin;">
-        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; display:flex; flex-direction:column; justify-content:center;"><small style="color:#8e95a5;">PING</small><b style="font-size:2.8vmin;">38 ms</b></div>
-        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; display:flex; flex-direction:column; justify-content:center;"><small style="color:#8e95a5;">DOWNLOAD</small><b style="font-size:2.8vmin;">210 Mb/s</b></div>
-        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; display:flex; flex-direction:column; justify-content:center;"><small style="color:#8e95a5;">JITTER</small><b style="font-size:2.8vmin;">0 ms</b></div>
-        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; display:flex; flex-direction:column; justify-content:center;"><small style="color:#8e95a5;">WLAN SIGNAL</small><b style="font-size:2.8vmin;">4 / 5</b></div>
-      </div>
-    </div>
-
-    <!-- Szene 5: Rezept des Tages mit ECHTFOTO -->
-    <div class="scene" id="scene-5">
-      <div class="card" style="grid-column: span 2;">
-        <div class="card-title" style="color:#e3c9a0;">Rezept des Tages • Spaghetti Bolognese (1 kg Fleisch)</div>
-        <div class="recipe-layout">
-          <div class="recipe-img">
-            <img src="https://images.unsplash.com/photo-1621996346565-e3d5d6281318?auto=format&fit=crop&w=800&q=80" alt="Spaghetti Bolognese">
-          </div>
-          <div class="recipe-content">
-            <div class="recipe-ingredients">
-              <b>Zutaten:</b> 1000g Rinderhackfleisch, 500g Spaghetti, 2 Dosen stückige Tomaten, 2 Zwiebeln, Knoblauch, Tomatenmark, Olivenöl, Kräuter.
-            </div>
-            <div class="recipe-steps">
-              <b>Zubereitungsschritte:</b><br>
-              1. Zwiebeln und Knoblauch fein würfeln und in Olivenöl in einem großen Topf glasig andünsten.<br>
-              2. Das Rinderhackfleisch (1 kg) portionsweise dazugeben und krümelig anbraten, bis es gut gebräunt ist.<br>
-              3. Tomatenmark unterrühren und kurz mit anrösten, um kräftige Röstaromen zu erzeugen.<br>
-              4. Mit den stückigen Tomaten ablöschen, mit Salz, Pfeffer und Oregano würzen.<br>
-              5. Die Sauce bei kleiner Hitze mindestens 30 Minuten sanft köcheln lassen.<<br>
-              6. Spaghetti al dente kochen, mit der heißen Bolognese-Sauce auf Tellern servieren.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Szene 6: Übersicht -->
-    <div class="scene" id="scene-6">
-      <div class="card" style="display:flex; justify-content:center; align-items:center; text-align:center;">
-        <div style="font-size:2.2vmin; color:#8e95a5;">Guten Abend, Pascal</div>
-        <div style="font-size:7.5vmin; font-weight:300; margin:1vmin 0;">12:23</div>
-        <div style="font-size:2vmin; color:#9db8d9;">Samstag, 7. November 2026</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Monatskalender & Status</div>
-        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; font-size:1.8vmin; line-height:1.6;">
-          <b>Termine heute:</b><br>
-          • 09:00 Meeting / Instandhaltung<br>
-          • 18:00 Abendessen & Planung<br>
-          <div style="margin-top:1vmin; font-size:1.6vmin; color:#8e95a5;">WLAN aktiv • Starlink Verbunden • Systemstabil</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Szene 7: Kalender und Woche -->
-    <div class="scene" id="scene-7">
-      <div class="card">
-        <div class="card-title" style="color:#b9adèo;">Monatsübersicht (November 2026)</div>
-        <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:0.5vmin; text-align:center; font-size:1.8vmin; background:#1c202a; padding:1.5vmin; border-radius:1vmin;">
-          <small>Mo</small><small>Di</small><small>Mi</small><small>Do</small><small>Fr</small><small>Sa</small><small>So</small>
-          <span></span><span></span><span></span><span></span><span></span><span style="background:#262b36; border-radius:50%;">1</span><span>2</span>
-          <span>3</span><span>4</span><span>5</span><span>6</span><span style="color:#e3a5b4; font-weight:bold;">7</span><span>8</span><span>9</span>
-          <span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
-          <span>17</span><span>18</span><span>19</span><span style="color:#e3c9a0; font-weight:bold;">20</span><span>21</span><span>22</span><span>23</span>
-          <span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title" style="color:#b9adèo;">Anstehende Highlights</div>
-        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; font-size:1.8vmin; display:flex; flex-direction:column; gap:1vmin; flex:1; justify-content:center;">
-          <div>🎂 <b>20.11.2001</b> – Pascals Geburtstag</div>
-          <div>🎄 <b>24.12.2026</b> – Heiligabend</div>
-          <div>🎆 <b>31.12.2026</b> – Silvester & Jahreswechsel</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Szene 8: Jetzt läuft (Spotify) -->
-    <div class="scene" id="scene-8">
-      <div class="card" style="grid-column: span 2; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
-        <div class="card-title" style="color:#9cc5b0;">Jetzt läuft (Spotify • iPhone)</div>
-        <div style="font-size:3vmin; font-weight:500; margin:1.5vmin 0;">Wu-Tang Clan – Enter the Wu-Tang</div>
-        <div style="font-size:2vmin; color:#8e95a5; margin-bottom:2vmin;">Album: Enter the Wu-Tang (36 Chambers)</div>
-        <div style="background:#1c202a; width:60%; height:0.8vmin; border-radius:1vmin; position:relative; margin-bottom:2vmin;">
-          <div style="background:#9cc5b0; width:45%; height:100%; border-radius:1vmin;"></div>
-        </div>
-        <div style="display:flex; gap:3vmin; font-size:3vmin;">⏮ ⏸ ⏭</div>
-      </div>
-    </div>
-
-    <!-- Szene 9: Tagesgedanke -->
-    <div class="scene" id="scene-9">
-      <div class="card" style="grid-column: span 2; display:flex; flex-direction:column; justify-content:center; padding:4vmin;">
-        <div class="card-title" style="color:#e3c9a0;">Tagesgedanke (Schwarzer Humor & Weisheit)</div>
-        <div style="background:#1c202a; padding:2.5vmin; border-radius:1.5vmin; margin-bottom:2vmin; font-size:2.2vmin; border-left:3px solid #ff6b6b; line-height:1.4;">
-          <i>„Der frühe Vogel fängt den Wurm. Aber der zweite Frosch bekommt die Fliege – Geduld zahlt sich aus.“</i>
-        </div>
-        <div style="background:#1c202a; padding:2.5vmin; border-radius:1.5vmin; font-size:2.2vmin; border-left:3px solid #9cc5b0; line-height:1.4;">
-          <i>„Du musst nicht den ganzen Weg sehen, sondern nur den nächsten Schritt im Terminal.“</i>
-        </div>
-      </div>
-    </div>
-
-    <!-- Szene 10: Himmel -->
-    <div class="scene" id="scene-10">
-      <div class="card" style="grid-column: span 2; background: linear-gradient(135deg, #201a24, #12141a); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
-        <div class="card-title">Himmel & Sonnenstand (Chemnitz)</div>
-        <div style="font-size:7vmin; font-weight:300; margin:1vmin 0;">☀️ 16:30</div>
-        <div style="font-size:2vmin; color:#e3c9a0;">Goldene Stunde • Übergang zur Dämmerung</div>
-        <div style="display:flex; gap:4vmin; margin-top:3vmin; font-size:1.8vmin; color:#8e95a5;">
-          <div>🌅 Sonnenaufgang: 07:12 Uhr</div>
-          <div>🌇 Sonnenuntergang: 16:48 Uhr</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Szene 11: Merkzettel und Countdown -->
-    <div class="scene" id="scene-11">
-      <div class="card">
-        <div class="card-title" style="color:#e3c9a0;">Lokaler Merkzettel</div>
-        <div style="background:#1c202a; padding:1.2vmin; border-radius:1vmin; font-size:1.8vmin; display:flex; flex-direction:column; gap:0.8vmin;">
-          <div>☑ Kaffeedose auffüllen</div>
-          <div>☐ Starlink Halterung prüfen</div>
-          <div>☐ 3D-Drucker Filament wechseln</div>
-          <div>☐ Skript-Backup auf GitHub laden</div>
-        </div>
-        <!-- Integrierte virtuelle QWERTZ-Tastatur für direkten Touch-Einsatz -->
-        <div class="keyboard">
-          <div class="key">Q</div><div class="key">W</div><div class="key">E</div><div class="key">R</div><div class="key">T</div><div class="key">Z</div><div class="key">U</div><div class="key">I</div><div class="key">O</div><div class="key">P</div>
-          <div class="key">A</div><div class="key">S</div><div class="key">D</div><div class="key">F</div><div class="key">G</div><div class="key">H</div><div class="key">J</div><div class="key">K</div><div class="key">L</div><div class="key">Ü</div>
-          <div class="key">Y</div><div class="key">X</div><div class="key">C</div><div class="key">V</div><div class="key">B</div><div class="key">N</div><div class="key">M</div><div class="key">Ö</div><div class="key">Ä</div><div class="key">↵</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title" style="color:#e3c9a0;">Countdowns</div>
-        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; font-size:1.9vmin; display:flex; flex-direction:column; gap:1.2vmin; justify-content:center; flex:1;">
-          <div style="display:flex; justify-content:between;"><span>🎂 Pascal Geburtstag:</span><b>13 Tage</b></div>
-          <div style="display:flex; justify-content:between;"><span>🎄 Heiligabend:</span><b>47 Tage</b></div>
-          <div style="display:flex; justify-content:between;"><span>🎆 Silvester:</span><b>54 Tage</b></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="progress-bar-container">
-    <div class="progress-bar" id="progress-bar"></div>
-  </div>
-</div>
-
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Wand-Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#000;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.sc{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;-webkit-transition:opacity .7s;transition:opacity .7s;pointer-events:none;overflow:hidden}
+.sc.on{opacity:1}
+.a{position:absolute}.l{font-weight:300}.m{font-weight:500}
+.chip{display:inline-block;padding:.7vh 2vh;border-radius:3vh;font-size:2.4vh}
+.pb{position:absolute;left:4vh;right:4vh;bottom:5.4vh;height:.9vh;border-radius:1vh;background:rgba(0,0,0,.18)}
+.pb i{display:block;height:100%;width:0;border-radius:1vh;background:#2b1230}
+.rw{display:-webkit-flex;display:flex}
+.cr{display:-webkit-flex;display:flex;font-size:2.5vh;line-height:4.6vh;text-align:center}
+.cr b,.cr span{-webkit-flex:1;flex:1;font-weight:400}.cr .k{-webkit-flex:1.1;flex:1.1;color:#a99cf0}
+#dots{position:absolute;left:0;right:0;bottom:1.6vh;text-align:center;z-index:5}
+#dots i{display:inline-block;width:1.2vh;height:1.2vh;border-radius:1vh;background:rgba(255,255,255,.38);margin:0 .5vh}
+#dots i.on{width:4vh;background:#fff}
+#pill{position:absolute;right:2.4vh;bottom:3.6vh;z-index:5;padding:.8vh 2vh;border-radius:3vh;background:rgba(0,0,0,.35);font-size:2.4vh}
+#err{position:absolute;left:1vh;top:1vh;color:#f55;font-size:2.2vh;z-index:9}
+#sp{position:absolute;right:2vh;top:1.6vh;z-index:9;padding:.7vh 2vh;border-radius:3vh;background:rgba(255,255,255,.85);color:#123;font-size:2.3vh;display:none}
+.nb{cursor:pointer}
+.nm{position:absolute;color:rgba(255,255,255,.28);font-weight:700}
+.hd{overflow:hidden}
+</style></head><body>
+<div id="app"></div><div id="dots"></div><div id="pill"></div><div id="err"></div><div id="sp" class="nb">verbinden</div>
 <script>
-  // ES5-kompatibles Karussell für alte Android WebViews
-  var totalScenes = 11;
-  var currentScene = 1;
-  var duration = 20000; // 20s Standard
-  var elapsed = 0;
-  
-  var titles = [
-    "1. HOROSKOP UND TAROT",
-    "2. NACHRICHTEN",
-    "3. WETTER UND KLIMA",
-    "4. WLAN UND STARLINK",
-    "5. REZEPT DES TAGES",
-    "6. UBERSICHT",
-    "7. KALENDER UND WOCHE",
-    "8. JETZT LAUFT (SPOTIFY)",
-    "9. TAGESGEDANKE",
-    "10. HIMMEL",
-    "11. MERKZETTEL UND COUNTDOWN"
-  ];
+window.onerror=function(m,u,l){document.getElementById('err').textContent='Fehler: '+m+' (Zeile '+l+')'};
+(function(){
+/* ===== KONFIGURATION ===== */
+var CFG={name:'Jean-Pascal',            // Name in der Begruessung (auf 'Pascal' aendern, falls gewuenscht)
+ lat:50.83,lon:12.92,ort:'Chemnitz',
+ birth:[2001,11,20],                    // Geburtsdatum: Jahr, Monat, Tag
+ spotifyId:'',                          // HIER die Spotify-Client-ID eintragen (leer = Szene aus)
+ topics:['Chemnitz','Hip-Hop Rap','Technik','Starlink Netzwerk','Gaming','Linux Open Source'], // je Besuch 3 davon
+ dur:[20,30,30,20,20,20,30,30,30,20,30]}; // Sekunden je Szene (Reihenfolge wie im PDF ohne Nacht am Ende)
+/* ========================= */
+var D=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],DS=['So','Mo','Di','Mi','Do','Fr','Sa'];
+var M=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function $(i){return document.getElementById(i)}
+function p2(n){return n<10?'0'+n:''+n}
+function hm(d){return p2(d.getHours())+':'+p2(d.getMinutes())}
+function ld(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function dayId(sh){return Math.floor((Date.now()-new Date().getTimezoneOffset()*60000-(sh||0))/86400000)}
+function R(n,d){var x=Math.sin((d==null?dayId():d)*9301+n*49297)*233280;return x-Math.floor(x)}
+function fit(e,mx,mn){if(!e)return;var s=mx;e.style.fontSize=s+'vh';while(e.scrollHeight>e.clientHeight+1&&s>mn){s-=.2;e.style.fontSize=s+'vh'}}
+function ago(s){var t=/^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/.test(s)?Date.UTC(+s.substr(0,4),+s.substr(5,2)-1,+s.substr(8,2),+s.substr(11,2),+s.substr(14,2),+s.substr(17,2)):Date.parse(s);if(isNaN(t))return '';var m=Math.round((Date.now()-t)/60000);return m<1?'gerade eben':m<60?'vor '+m+' Min.':m<1440?'vor '+Math.round(m/60)+' Std.':'vor '+Math.round(m/1440)+' Tg.'}
+function isoWeek(d){var t=new Date(d.getFullYear(),d.getMonth(),d.getDate());t.setDate(t.getDate()-((t.getDay()+6)%7)+3);var f=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-f)/864e5-3+((f.getDay()+6)%7))/7)}
+function sun(d){var r=Math.PI/180,n=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5),g=2*Math.PI/365*(n-1),
+ eq=229.18*(.000075+.001868*Math.cos(g)-.032077*Math.sin(g)-.014615*Math.cos(2*g)-.040849*Math.sin(2*g)),
+ dc=.006918-.399912*Math.cos(g)+.070257*Math.sin(g)-.006758*Math.cos(2*g)+.000907*Math.sin(2*g),la=CFG.lat*r,
+ ha=Math.acos(Math.cos(90.833*r)/(Math.cos(la)*Math.cos(dc))-Math.tan(la)*Math.tan(dc))/r,b=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate());
+ return [new Date(b+(720-4*(CFG.lon+ha)-eq)*6e4),new Date(b+(720-4*(CFG.lon-ha)-eq)*6e4)]}
+function moon(){var a=((Date.now()/864e5+2440587.5-2451550.26)%29.530588+29.530588)%29.530588;return {a:a,f:Math.round((1-Math.cos(2*Math.PI*a/29.530588))/2*100)}}
+function moonSvg(c,s){var m=moon(),th=2*Math.PI*m.a/29.530588,k=Math.cos(th),rx=Math.abs(k)*c,w=m.a<14.765,d;
+ if(w)d='M'+c+' 0A'+c+' '+c+' 0 0 1 '+c+' '+2*c+'A'+rx+' '+c+' 0 0 '+(k>0?0:1)+' '+c+' 0';else d='M'+c+' 0A'+c+' '+c+' 0 0 0 '+c+' '+2*c+'A'+rx+' '+c+' 0 0 '+(k>0?1:0)+' '+c+' 0';
+ return '<svg viewBox="0 0 '+2*c+' '+2*c+'" width="'+s+'" height="'+s+'"><circle cx="'+c+'" cy="'+c+'" r="'+c+'" fill="#2c2850"/><path d="'+d+'" fill="#f3ecd2"/></svg>'}
+function wi(c,s){var cl='<ellipse cx="14" cy="19" rx="9" ry="6" fill="#dfe9ff"/><circle cx="20" cy="14" r="7" fill="#dfe9ff"/>',b;
+ if(c<2)b='<circle cx="16" cy="16" r="8" fill="#ffd98e"/>';else if(c==2)b='<circle cx="12" cy="11" r="6" fill="#ffd98e"/>'+cl;else if(c==3)b=cl;
+ else if(c<50)b='<path d="M5 12h22M8 18h18M5 24h22" stroke="#dfe9ff" stroke-width="2.4"/>';
+ else if(c<70||(c>79&&c<90&&c!=85&&c!=86))b=cl+'<path d="M12 26l-1 4M18 26l-1 4M24 26l-1 4" stroke="#7fb4ff" stroke-width="2"/>';
+ else if(c<80||c==85||c==86)b=cl+'<circle cx="12" cy="28" r="1.7" fill="#fff"/><circle cx="20" cy="29" r="1.7" fill="#fff"/>';
+ else b=cl+'<path d="M17 21l-4 7h4l-2 5" stroke="#ffd98e" stroke-width="2.4" fill="none"/>';
+ return '<svg viewBox="0 0 32 34" width="'+s+'" height="'+s+'">'+b+'</svg>'}
+function wd(c){return c==0?'klar':c<3?'heiter':c==3?'bewölkt':c<50?'Nebel':c<60?'Nieselregen':c<70?'Regen':c<80?'Schnee':c<85?'Schauer':c<90?'Schnee':'Gewitter'}
 
-  function updateDots() {
-    var container = document.getElementById('scene-dots');
-    container.innerHTML = '';
-    for(var i=1; i<=totalScenes; i++) {
-      var dot = document.createElement('div');
-      dot.className = 'dot' + (i === currentScene ? ' active' : '');
-      container.appendChild(dot);
-    }
-  }
+/* ---- Inhalte ---- */
+var JK=['Ich bin nicht faul, ich befinde mich im Energiesparmodus bis zum Tod.','Der frühe Vogel fängt den Wurm. Der Wurm hätte liegen bleiben sollen.','Das Leben ist wie ein Buffet: Man nimmt zu viel und am Ende zahlt der Körper.','Zeit heilt alle Wunden. Sie ist nur sehr großzügig mit den Nebenwirkungen.','Optimisten sehen das Licht am Ende des Tunnels. Realisten sehen den Zug.','Ich habe keine Probleme, nur Bonuslevel mit schlechter Beleuchtung.','Mein Akku hält länger als meine guten Vorsätze, und das will was heißen.','Der Tod ist sicher. Die Steuererklärung leider auch.','Ich bin nicht verwirrt, nur sehr viele Tabs im Kopf sind offen und keiner lädt.','Geld macht nicht glücklich, hat mein Kontostand persönlich genommen.','Schlaf ist der kleine Bruder des Todes. Ich übe schon mal.','Ich habe mir Ziele gesetzt. Das Leben hat mich geblockt.','Erwartungen sind vorgeplante Enttäuschungen mit höflicher Anrede.','Mein innerer Schweinehund hat inzwischen einen Anwalt.','Ich denke positiv: Schlimmer geht immer, aber ich bin ja noch nicht fertig.','Das Universum ist unendlich, genau wie meine Ausreden.','Alles hat ein Ende, nur mein Dispo nicht.','Wenn das Leben dir Zitronen gibt, bestell einen Anwalt: Sie sind abgelaufen.','Ich bin Frühaufsteher. Nur dauert das Aufstehen etwas länger.','Hoffnung ist der Wecker, der klingelt, obwohl das Leben Schlummern gedrückt hat.'];
+var WS=['Fang an, bevor du bereit bist.','Du musst nicht den ganzen Weg sehen, nur den nächsten Schritt.','Ruhe ist keine Pause vom Leben, sondern ein Teil davon.','Was du heute tust, wird morgen zur Gewohnheit.','Gelassenheit ist Stärke ohne Lärm.','Klarheit entsteht beim Tun, nicht beim Grübeln.','Kleine Schritte sind trotzdem Schritte.','Auch ein langsamer Fluss erreicht das Meer.','Nicht alles, was zählt, lässt sich zählen.','Gute Dinge brauchen Zeit und Geduld.','Wer sich selbst treu bleibt, muss nichts spielen.','Fehler sind Beweise, dass du es versuchst.','Tu heute etwas, wofür dein späteres Ich dankbar ist.','Fokus ist die leise Art von Mut.','Das Beste kommt oft leise.','Weniger Lärm, mehr Wesentliches.','Jeder Tag ist ein leeres Blatt.','Geh dein Tempo, aber geh.','Vertraue dem Prozess, auch wenn er holpert.','Schönes entsteht im Dazwischen.'];
+var TA=[['0','Der Narr','Neubeginn','Ein mutiger Sprung ins Ungewisse.'],['I','Der Magier','Willenskraft','Du hast alle Werkzeuge, nutze sie.'],['II','Die Hohepriesterin','Intuition','Höre auf deine innere Stimme.'],['III','Die Herrscherin','Fülle','Wachstum, Kreativität, Genuss.'],['IV','Der Herrscher','Struktur','Ordnung und klare Entscheidungen.'],['V','Der Hierophant','Tradition','Lerne von bewährtem Wissen.'],['VI','Die Liebenden','Verbindung','Eine Wahl des Herzens steht an.'],['VII','Der Wagen','Antrieb','Mit Disziplin zum Ziel.'],['VIII','Die Kraft','Mut','Sanfte Stärke schlägt Härte.'],['IX','Der Eremit','Einkehr','Rückzug bringt Klarheit.'],['X','Das Rad','Wandel','Der Kreislauf dreht sich weiter.'],['XI','Gerechtigkeit','Ausgleich','Handle fair und klar.'],['XII','Der Gehängte','Perspektive','Loslassen und anders sehen.'],['XIII','Der Tod','Wandlung','Etwas endet, Neues beginnt.'],['XIV','Mäßigkeit','Balance','Geduld und das rechte Maß.'],['XV','Der Teufel','Bindung','Erkenne, was dich festhält.'],['XVI','Der Turm','Umbruch','Altes bricht, Wahres bleibt.'],['XVII','Der Stern','Hoffnung','Ruhige Zuversicht nach dem Sturm.'],['XVIII','Der Mond','Illusion','Nicht alles ist, wie es scheint.'],['XIX','Die Sonne','Freude','Klarheit, Erfolg, gute Laune.'],['XX','Das Gericht','Erneuerung','Ein Ruf zum Neustart.'],['XXI','Die Welt','Vollendung','Ein Kapitel ist rund.']];
+var HL=['Ein ehrliches Gespräch bringt dich näher.','Wer zuhört, gewinnt Vertrauen, auch ohne Reim.','Ein Blick sagt heute mehr als ein ganzer Part.','Zeig Gefühl, das ist kein Diss.'],
+HB=['Teile eine Idee, bevor sie perfekt ist.','Dein Flow trägt dich durch die To-do-Liste.','Ein fertiger Beat schlägt zehn halbe.','Kleine Schritte, saubere Mische.'],
+HG=['Dein Instinkt liegt heute richtig.','Ein Zufall spielt dir in die Karten.','Vertrau dem ersten Take.','Heute klappt, was du nicht zerdenkst.'],
+HC=[['Violett','#b57cff'],['Gold','#ffd98e'],['Türkis','#4fd1c5'],['Koralle','#ff8f7e'],['Mintgrün','#8be0b0'],['Himmelblau','#7fc1ff']];
+var RZ=[['Shakshuka',10,15,2,['4 Eier','400 g Tomaten','1 Paprika','1 Zwiebel','2 Knoblauchzehen','1 TL Kreuzkümmel'],['Zwiebel, Paprika und Knoblauch in Öl 5 Min. anbraten.','Tomaten und Gewürze zugeben, 10 Min. köcheln.','Mulden formen, Eier hineingleiten lassen, 5 Min. stocken lassen.'],'#d9472b','#e8643f'],
+['Spaghetti Aglio e Olio',5,10,2,['200 g Spaghetti','4 Knoblauchzehen','6 EL Olivenöl','1 Chili','Petersilie','Salz'],['Spaghetti in Salzwasser al dente kochen.','Knoblauch und Chili bei kleiner Hitze goldgelb ziehen lassen.','Nudeln mit Kochwasser in der Pfanne schwenken, Petersilie darüber.'],'#e8c46a','#f3d98f'],
+['Kartoffelsuppe',15,25,4,['800 g Kartoffeln','2 Möhren','1 Zwiebel','1 l Brühe','100 ml Sahne','Majoran'],['Gemüse würfeln und in Butter kurz anschwitzen.','Mit Brühe aufgießen, 20 Min. weich kochen.','Grob pürieren, Sahne und Majoran einrühren.'],'#e3b26b','#f0c98a'],
+['Chili sin Carne',15,30,4,['400 g Kidneybohnen','200 g Mais','400 g Tomaten','1 Paprika','1 Zwiebel','1 TL Chili'],['Zwiebel und Paprika in Öl anbraten.','Tomaten, Bohnen, Mais und Gewürze zugeben.','30 Min. leise köcheln, abschmecken.'],'#a8301f','#c24a2e'],
+['Pfannkuchen',10,15,2,['200 g Mehl','300 ml Milch','2 Eier','1 EL Zucker','1 Prise Salz','Butter'],['Mehl, Milch, Eier, Zucker und Salz glatt verrühren.','Teig 10 Min. quellen lassen.','Portionsweise in Butter goldbraun backen.'],'#e8b96b','#f4d089'],
+['Gemüse-Curry',15,20,3,['400 ml Kokosmilch','2 EL Currypaste','1 Süßkartoffel','1 Paprika','150 g Spinat','Reis'],['Currypaste in Öl kurz anrösten.','Süßkartoffel und Paprika mit Kokosmilch 15 Min. garen.','Spinat unterheben, mit Reis servieren.'],'#e69a2e','#f2b84f'],
+['Ofengemüse mit Feta',15,30,2,['1 Zucchini','2 Möhren','1 Paprika','200 g Feta','3 EL Olivenöl','Thymian'],['Gemüse in Stücke schneiden, mit Öl und Thymian mischen.','Bei 200 Grad 20 Min. rösten.','Feta darauflegen und 10 Min. mitbacken.'],'#7aa84b','#a3c46a']];
 
-  function switchScene() {
-    document.getElementById('scene-' + currentScene).className = 'scene';
-    currentScene = (currentScene % totalScenes) + 1;
-    
-    var nextEl = document.getElementById('scene-' + currentScene);
-    nextEl.className = 'scene active' + (nextEl.children.length === 1 ? ' single' : '');
-    
-    document.getElementById('scene-title').innerText = titles[currentScene - 1];
-    updateDots();
-    elapsed = 0;
-  }
+/* ---- Szenen-Skelette ---- */
+var S=[],el=[];
+S[0]='<div class="a" style="left:0;top:0;width:100%;height:100%"></div><div class="a" style="left:-10vh;top:30vh;width:84vh;height:84vh;border-radius:50%;border:.7vh solid #3d3170"></div><div class="a" style="left:-4vh;top:36vh;width:72vh;height:72vh;border-radius:50%;background:#b9a4ff"></div><div class="a" id="o_n" style="left:-4vh;top:36vh;width:72vh;height:72vh;text-align:center;color:#241d4d;font-weight:300"></div><div class="a" style="left:59vh;top:38vh;width:6vh;height:6vh;border-radius:50%;background:#ff8f7e"></div>'+
+'<div class="a l" id="o_c" style="left:4vh;top:2vh;font-size:10vh;line-height:12vh"></div><div class="a" id="o_g" style="left:4.4vh;top:14vh;font-size:3vh;color:#ffd98e"></div><div class="a m" id="o_d" style="left:4.4vh;top:19vh;font-size:3.8vh"></div><div class="a" id="o_x" style="left:4.4vh;top:25vh;font-size:2.5vh;color:#b3a8e8"></div>'+
+'<div class="a" style="left:54vw;top:3.5vh;width:43vw;height:88vh;border-radius:4vh;background:#3a2f6b;padding:3vh"><div id="o_m" style="font-size:2.3vh;letter-spacing:.5vh;color:#a99cf0;margin-bottom:3vh"></div><div id="o_k"></div><div style="position:absolute;left:3vh;right:3vh;bottom:11vh;font-size:2.5vh;color:#d9d2ff"><div id="o_t" style="margin-bottom:1vh"></div><div style="height:1vh;border-radius:1vh;background:rgba(255,255,255,.18)"><i id="o_p" style="display:block;height:100%;border-radius:1vh;background:#ffd98e"></i></div></div><div id="o_w" class="chip" style="position:absolute;left:3vh;right:3vh;bottom:3vh;background:#ff9a85;color:#2b1230;text-align:center;font-size:2.7vh"></div></div>';
+S[1]='<div class="a" style="left:60vh;top:-22vh;width:86vh;height:86vh;border-radius:50%;background:#ffc3d3;overflow:hidden" id="n_ph"></div><div class="nm" style="left:72vh;top:-4vh;font-size:92vh;line-height:92vh;color:rgba(255,255,255,.18)">1</div>'+
+'<div class="a chip" id="n_c" style="left:4vh;top:4vh;background:#2b1230;color:#ffd6e2"></div><div class="a" id="n_s" style="right:4vh;top:4.8vh;font-size:2.4vh;color:#2b1230"></div><div class="a hd m" id="n_h" style="left:4vh;top:12vh;width:62vw;height:30vh;font-size:5.4vh;line-height:1.2;color:#2b1230;font-weight:400"></div><div class="a" id="n_q" style="left:4vh;top:44vh;font-size:2.4vh;color:#5a2a40"></div><div class="a" style="left:4vh;right:4vh;top:49vh;height:.2vh;background:rgba(43,18,48,.35)"></div>'+
+'<div class="a" style="left:4vh;top:52vh;width:70vw"><div class="rw" style="margin-bottom:2.6vh"><div class="chip" style="width:4vh;height:4vh;padding:0;line-height:4vh;text-align:center;background:#2b1230;color:#fff;margin-right:2vh;border-radius:50%">2</div><div><div class="hd" id="n_2h" style="height:8.4vh;width:56vw;font-size:3.2vh;line-height:1.25;color:#2b1230"></div><div id="n_2q" style="font-size:2.2vh;color:#5a2a40"></div></div></div><div class="rw"><div class="chip" style="width:4vh;height:4vh;padding:0;line-height:4vh;text-align:center;background:#2b1230;color:#fff;margin-right:2vh;border-radius:50%">3</div><div><div class="hd" id="n_3h" style="height:8.4vh;width:56vw;font-size:3.2vh;line-height:1.25;color:#2b1230"></div><div id="n_3q" style="font-size:2.2vh;color:#5a2a40"></div></div></div></div><div class="a" id="n_g" style="right:5vh;bottom:9vh;font-size:2.3vh;color:#2b1230;text-align:right"></div><div class="pb"><i></i></div>';
+var BC=[['#ffc78f','#ffdcb8'],['#9ee3b6','#c2f0d2'],['#9bc8ff','#c3deff']];
+S[2]='';for(var q=0;q<3;q++){S[2]+='<div class="a" style="left:0;right:0;top:'+q*33.4+'vh;height:33.4vh;background:'+BC[q][0]+'"></div><div class="a" style="left:62vw;top:'+(q*33.4+2)+'vh;width:30vh;height:30vh;border-radius:50%;background:'+BC[q][1]+';overflow:hidden"></div><div class="nm" style="left:76vw;top:'+(q*33.4+2)+'vh;font-size:26vh;line-height:30vh;color:rgba(255,255,255,.85)">'+(q+1)+'</div><div class="a chip" id="m_c'+q+'" style="left:4vh;top:'+(q*33.4+2.6)+'vh;background:#1c1830;color:#fff"></div><div class="a hd" id="m_h'+q+'" style="left:4vh;top:'+(q*33.4+9.6)+'vh;width:55vw;height:15vh;font-size:4vh;line-height:1.22;color:#1c1830;font-weight:500"></div><div class="a" id="m_q'+q+'" style="left:4vh;top:'+(q*33.4+26.4)+'vh;font-size:2.3vh;color:#1c1830"></div>'}
+S[2]+='<div class="a" id="m_s" style="left:46vw;top:3vh;font-size:2.3vh;color:#1c1830"></div><div class="pb"><i></i></div>';
+S[3]='<div class="a" id="w_t0" style="left:4vh;top:3vh;font-size:2.3vh;letter-spacing:.4vh;color:#9ec1ff"></div><div class="a" style="left:56vw;top:5vh;width:34vh;height:16vh;border-radius:8vh;background:#3d6cb8"></div><div class="a" style="left:63vw;top:2vh;width:22vh;height:22vh;border-radius:50%;background:#3d6cb8"></div>'+
+'<div class="a l" id="w_t" style="left:4vh;top:5vh;font-size:30vh;line-height:32vh;color:#d3e6ff"></div><div class="a" id="w_d" style="left:4.4vh;top:38vh;font-size:3.6vh;color:#bcd5ff"></div><div class="a" id="w_p" style="left:4vh;top:44vh"></div><div class="a" id="w_x" style="left:4.4vh;top:51vh;font-size:2.3vh;color:#9ec1ff;width:50vw;line-height:3.2vh"></div><div class="a rw" id="w_dy" style="left:46vw;top:25vh;width:51vw"></div>'+
+'<div class="a" id="w_c" style="left:4vh;right:4vh;top:57vh;height:39vh"></div>';
+S[4]='<div class="a" style="left:58vw;top:6vh;width:88vh;height:88vh;border-radius:50%;background:#0b2a1f"></div><div class="a" style="left:61vw;top:9vh;width:82vh;height:82vh;border-radius:50%;border:.2vh solid #1b5a43"></div><div class="a" style="left:65vw;top:13vh;width:74vh;height:74vh;border-radius:50%;border:.2vh solid #1b5a43"></div><div class="a" style="left:69vw;top:17vh;width:66vh;height:66vh;border-radius:50%;border:.2vh solid #1b5a43"></div>'+
+'<div class="a" id="j_v" style="left:73vw;top:33vh;width:34vh;height:34vh;border-radius:50%;background:#9ce3b6;overflow:hidden;-webkit-animation:spin 24s linear infinite;animation:spin 24s linear infinite"></div><div class="a" style="left:73vw;top:33vh;width:34vh;height:34vh;border-radius:50%;pointer-events:none"><i style="position:absolute;left:50%;top:50%;width:3vh;height:3vh;margin:-1.5vh;border-radius:50%;background:#0b2a1f"></i></div>'+
+'<div class="a" style="left:4vh;top:8vh;font-size:2.4vh;letter-spacing:.5vh;color:#9ce3b6">JETZT LÄUFT</div><div class="a hd" id="j_t" style="left:4vh;top:14vh;width:52vw;height:30vh;font-size:8vh;line-height:1.1"></div><div class="a" id="j_a" style="left:4vh;top:46vh;font-size:3.6vh;color:#9ce3b6"></div><div class="a" id="j_g" style="left:4vh;top:52vh;font-size:2.4vh;color:#6fb892"></div>'+
+'<div class="a" style="left:4vh;top:66vh;width:46vw;height:1vh;border-radius:1vh;background:#1d5a43"><i id="j_p" style="display:block;height:100%;width:0;border-radius:1vh;background:#9ce3b6"></i></div><div class="a" id="j_1" style="left:4vh;top:69vh;font-size:2.3vh;color:#9ce3b6"></div><div class="a" id="j_2" style="left:46vw;top:69vh;font-size:2.3vh;color:#9ce3b6;text-align:right;width:6vw"></div>'+
+'<div class="a rw" style="left:4vh;top:76vh;-webkit-align-items:center;align-items:center"><div class="nb" id="j_b" style="width:10vh;height:10vh;margin-right:3vh"><svg viewBox="0 0 24 24" width="100%" height="100%"><circle cx="12" cy="12" r="12" fill="#1d5a43"/><path d="M8 7h2v10H8zM17 7v10l-7-5z" fill="#9ce3b6"/></svg></div><div class="nb" id="j_pp" style="width:13vh;height:13vh;margin-right:3vh"></div><div class="nb" id="j_n" style="width:10vh;height:10vh"><svg viewBox="0 0 24 24" width="100%" height="100%"><circle cx="12" cy="12" r="12" fill="#1d5a43"/><path d="M14 7h2v10h-2zM7 7v10l7-5z" fill="#9ce3b6"/></svg></div></div>';
+S[5]='<div id="h_b"></div><div class="a" id="h_s" style="left:0;top:0;width:100%;height:100%"></div><div class="a" id="h_o" style="width:20vh;height:20vh;margin:-10vh 0 0 -10vh;border-radius:50%"></div><svg class="a" style="left:0;bottom:0;width:100%;height:44vh" viewBox="0 0 100 44" preserveAspectRatio="none"><path d="M0 14C20 4 40 22 60 18S90 2 100 6V44H0Z" id="h_1"/><path d="M0 28C25 22 45 34 70 28S92 24 100 26V44H0Z" id="h_2"/></svg>'+
+'<div class="a l" id="h_c" style="left:4vh;top:3vh;font-size:9vh"></div><div class="a" id="h_d" style="left:4.4vh;top:14.4vh;font-size:3vh;color:#ffd98e"></div><div class="a rw" style="left:4vh;right:4vh;bottom:5.4vh;font-size:3vh;color:#ffd98e;-webkit-justify-content:space-between;justify-content:space-between"><span id="h_a"></span><span id="h_m"></span><span id="h_u"></span></div>';
+S[6]='<div class="a" style="left:0;top:0;width:100%;height:100%;background:#fff0d6"></div><div class="a" style="left:0;top:0;width:100%;height:100%;background:#15121f;-webkit-clip-path:polygon(0 0,59% 0,41% 100%,0 100%);clip-path:polygon(0 0,59% 0,41% 100%,0 100%)"></div>'+
+'<div class="a chip" style="left:4vh;top:5vh;background:#ff9bb7;color:#2b1230">SCHWARZER HUMOR</div><div class="a chip" style="right:4vh;top:5vh;background:#6b4fd6;color:#fff">GEDANKE DES TAGES</div><div class="a hd" id="g_j" style="left:4vh;top:18vh;width:42vw;height:54vh;font-size:5vh;line-height:1.28;color:#fff"></div><div class="a hd" id="g_w" style="right:4vh;top:18vh;width:34vw;height:54vh;font-size:5vh;line-height:1.28;color:#2d1a5c;text-align:left"></div><div class="a chip" id="g_n" style="left:50%;margin-left:-14vh;bottom:9vh;width:28vh;text-align:center;background:#c9a8ff;color:#2b1230;font-size:2.4vh"></div>';
+S[7]='<div class="a" style="left:3vw;top:5vh;font-size:7vh;color:#d9a8ff" id="s_t">Skorpion</div><div class="a" style="left:3.2vw;top:14vh;font-size:2.3vh;letter-spacing:.5vh;color:#a98bd8">TAGESHOROSKOP · 3. DEKADE (13.–22. NOV.)</div><div class="a" id="s_b" style="left:3vw;top:20vh;width:46vw"></div><div class="a" id="s_x" style="left:3vw;bottom:9vh;font-size:2.5vh;color:#d9c5f5;width:46vw"></div>'+
+'<div class="a rw" id="s_k" style="left:50vw;top:12vh;width:48vw"></div><div class="a" id="s_f" style="left:3vw;right:3vw;bottom:5.2vh;font-size:2.1vh;color:#8d78b8"></div>';
+S[8]='<div class="a" style="left:-30vh;top:6vh;width:88vh;height:88vh;border-radius:50%;background:#fff0e4"></div><div class="a" id="r_i" style="left:-24vh;top:12vh;width:76vh;height:76vh"></div>'+
+'<div class="a" style="left:56vh;top:4vh;font-size:2.3vh;letter-spacing:.5vh;color:#5a2a1a">REZEPT DES TAGES</div><div class="a" id="r_t" style="left:56vh;top:8vh;font-size:6.4vh;color:#3a1608;font-weight:500"></div><div class="a" id="r_p" style="left:56vh;top:18vh;width:42vw"></div><div class="a" id="r_z" style="left:56vh;top:27vh;width:42vw"></div><div class="a" id="r_s" style="left:56vh;top:50vh;width:42vw"></div>';
+S[9]='<div class="a" id="v_d" style="left:4vh;top:4vh;width:3vh;height:3vh;border-radius:50%;background:#7bf0a0"></div><div class="a" id="v_s" style="left:9vh;top:3.4vh;font-size:4vh"></div><div class="a" id="v_r" style="left:4vh;top:12vh;width:44vh;height:44vh"></div><div class="a" style="left:54vw;top:12vh;font-size:2.3vh;letter-spacing:.5vh;color:#8fe0e0">LETZTE MESSUNGEN</div><div class="a rw" id="v_b" style="left:54vw;top:17vh;width:42vw;height:24vh;-webkit-align-items:flex-end;align-items:flex-end"></div><div class="a" id="v_x" style="left:54vw;top:46vh;font-size:3vh;line-height:5vh;color:#dff"></div><div class="a" id="v_u" style="left:4vh;bottom:9vh;font-size:2.8vh;color:#8fe0e0"></div><div class="a" style="left:54vw;bottom:9vh;width:42vw;font-size:2vh;color:#5aa8a8">Misst die Verbindung des Tablets, nicht die Starlink-Antenne. Werte sind Schätzungen.</div>';
+S[10]='<div id="z_s"></div><div class="a" id="z_m" style="left:50%;top:6vh;width:44vh;height:44vh;margin-left:-22vh"></div><div class="a l" id="z_c" style="left:0;right:0;top:58vh;text-align:center;font-size:12vh;color:rgba(160,150,230,.7)"></div><div class="a" id="z_g" style="left:0;right:0;top:75vh;text-align:center;font-size:3vh;color:rgba(160,150,230,.6)"></div>';
+var BG=['#241d4d','#ff9fb8','#ffc78f','#1c3a73','#123f2f','#2d2260','#15121f','#2a1650','#ffb199','#103a40','#0b0e24'];
+var app=$('app');
+for(var i=0;i<S.length;i++){var d=document.createElement('div');d.className='sc';d.style.background=BG[i];d.innerHTML=S[i];app.appendChild(d);el[i]=d}
+var st=document.createElement('style');st.textContent='@-webkit-keyframes spin{to{-webkit-transform:rotate(360deg)}}@keyframes spin{to{transform:rotate(360deg)}}@-webkit-keyframes tw{50%{opacity:.2}}@keyframes tw{50%{opacity:.2}}';document.head.appendChild(st);
+$('j_pp').innerHTML='';
 
-  updateDots();
-  setInterval(function() {
-    elapsed += 100;
-    var pct = (elapsed / duration) * 100;
-    document.getElementById('progress-bar').style.width = pct + '%';
-    if(elapsed >= duration) {
-      switchScene();
-    }
-  }, 100);
-</script>
+/* ---- Wetterdaten ---- */
+var W=ld('wx2');
+function wxGet(){fetch('https://api.open-meteo.com/v1/forecast?latitude='+CFG.lat+'&longitude='+CFG.lon+'&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,surface_pressure,weather_code&hourly=temperature_2m,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max&timezone=Europe/Berlin&forecast_days=7').then(function(r){return r.json()}).then(function(j){if(!j.current)throw 0;j.at=Date.now();W=j;sv('wx2',j)}).catch(function(){})}
+/* ---- Nachrichten ---- */
+var NW=ld('nw2')||{ts:[],tp:{},at:0},vs={ts:0,mn:0,tp:{}};
+function feed(u,cb){fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(u)).then(function(r){return r.json()}).then(function(j){cb(j.items||[])}).catch(function(){cb(null)})}
+function nwGet(){feed('https://www.tagesschau.de/index~rss2.xml',function(it){if(it&&it.length){NW.ts=it.slice(0,9);NW.at=Date.now();sv('nw2',NW)}});
+ CFG.topics.forEach(function(t){feed('https://news.google.com/rss/search?q='+encodeURIComponent(t)+'&hl=de&gl=DE&ceid=DE:de',function(it){if(it&&it.length){NW.tp[t]=it.slice(0,8);NW.at=Date.now();sv('nw2',NW)}})})}
+function cat(l){var m=/tagesschau\.de\/([a-z]+)\//.exec(l||'');var c={inland:'Inland',ausland:'Ausland',wirtschaft:'Wirtschaft',sport:'Sport',wissen:'Wissen',investigativ:'Investigativ',faktenfinder:'Faktenfinder',kultur:'Kultur'};return m&&c[m[1]]?c[m[1]]:'Nachrichten'}
+function img(i){var u=i.thumbnail||(i.enclosure&&i.enclosure.link&&/\.(jpe?g|png|webp)/i.test(i.enclosure.link)?i.enclosure.link:'');return u}
+/* ---- Ping ---- */
+var PG=ld('pg2')||[],t0=Date.now(),lastFail=t0,fails=0;
+function ping(){var s=Date.now();fetch('https://api.open-meteo.com/v1/forecast?latitude=50.83&longitude=12.92&current=temperature_2m&_='+s,{cache:'no-store'}).then(function(r){return r.json()}).then(function(){PG.push(Date.now()-s)}).catch(function(){PG.push(-1);fails++;lastFail=Date.now()}).then(function(){while(PG.length>24)PG.shift();sv('pg2',PG)})}
+/* ---- Spotify ---- */
+var SP={tk:ld('sp2'),pl:false,it:null,pos:0,at:0};
+function rnd(n){var a=new Uint8Array(n),s='',i;crypto.getRandomValues(a);for(i=0;i<n;i++)s+=('0'+a[i].toString(16)).slice(-2);return s}
+function b64(b){var s='',a=new Uint8Array(b),i;for(i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+var RU=location.origin+location.pathname;
+function tkReq(o){var b=new URLSearchParams();for(var k in o)b.append(k,o[k]);return fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:b.toString()}).then(function(r){return r.json()}).then(function(j){if(!j.access_token)throw 0;SP.tk={a:j.access_token,r:j.refresh_token||(SP.tk&&SP.tk.r),e:Date.now()+j.expires_in*1000};sv('sp2',SP.tk);return SP.tk.a})}
+function tok(){if(SP.tk&&SP.tk.e>Date.now()+30000)return Promise.resolve(SP.tk.a);if(SP.tk&&SP.tk.r)return tkReq({grant_type:'refresh_token',refresh_token:SP.tk.r,client_id:CFG.spotifyId});return Promise.reject()}
+function api(p,m){return tok().then(function(a){return fetch('https://api.spotify.com/v1/me/player'+p,{method:m||'GET',headers:{Authorization:'Bearer '+a}})})}
+function spLogin(){var v=rnd(32);sv('spv2',v);crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)).then(function(h){location.href='https://accounts.spotify.com/authorize?response_type=code&client_id='+CFG.spotifyId+'&scope='+encodeURIComponent('user-read-playback-state user-modify-playback-state')+'&redirect_uri='+encodeURIComponent(RU)+'&code_challenge_method=S256&code_challenge='+b64(h)})}
+function spPoll(){if(!CFG.spotifyId)return;if(!SP.tk){$('sp').style.display='block';return}$('sp').style.display='none';
+ api('').then(function(r){if(r.status==204){SP.pl=false;return}if(r.status==401){SP.tk=null;sv('sp2',null);return}return r.json().then(function(j){SP.pl=!!(j&&j.item&&j.is_playing);SP.it=j&&j.item;SP.dev=j&&j.device&&j.device.name;SP.pos=j?j.progress_ms:0;SP.at=Date.now()})}).catch(function(){})}
+function spCmd(p,m){api(p,m).then(function(){setTimeout(spPoll,700)})}
+$('sp').onclick=spLogin;$('j_b').onclick=function(){spCmd('/previous','POST')};$('j_n').onclick=function(){spCmd('/next','POST')};$('j_pp').onclick=function(){spCmd(SP.pl?'/pause':'/play','PUT')};
+var qm=/[?&]code=([^&]+)/.exec(location.search);if(qm&&CFG.spotifyId){tkReq({grant_type:'authorization_code',code:qm[1],redirect_uri:RU,client_id:CFG.spotifyId,code_verifier:ld('spv2')||''}).then(function(){history.replaceState(null,'',RU);spPoll()}).catch(function(){history.replaceState(null,'',RU)})}
 
-</body>
-</html>
+/* ---- Szenen füllen ---- */
+function greet(){var h=new Date().getHours();return (h<11&&h>=5?'Guten Morgen':h<17&&h>=11?'Hallo':h<22&&h>=17?'Guten Abend':'Gute Nacht')+' '+CFG.name}
+function bdIn(){var n=new Date(),b=new Date(n.getFullYear(),CFG.birth[1]-1,CFG.birth[2]);if(b<new Date(n.getFullYear(),n.getMonth(),n.getDate()))b=new Date(n.getFullYear()+1,CFG.birth[1]-1,CFG.birth[2]);return Math.round((b-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/864e5)}
+var EN=[function(){var n=new Date(),y=n.getFullYear(),m=n.getMonth(),dd=n.getDate(),sn=sun(n),bd=(m+1==CFG.birth[1]&&dd==CFG.birth[2]);
+ $('o_n').textContent=dd;$('o_n').style.fontSize=(dd>9?44:60)+'vh';$('o_n').style.lineHeight='72vh';
+ $('o_c').textContent=hm(n);$('o_g').innerHTML=bd?'Alles Gute zum '+(y-CFG.birth[0])+'., '+esc(CFG.name)+'! <svg viewBox="0 0 24 24" width="3.6vh" height="3.6vh" style="vertical-align:middle"><rect x="4" y="12" width="16" height="9" rx="2" fill="#ffb199"/><rect x="4" y="9" width="16" height="4" fill="#fff0e4"/><path d="M12 3v6" stroke="#ffd98e" stroke-width="2"/></svg>':esc(greet());
+ $('o_d').textContent=D[n.getDay()]+' · '+dd+'. '+M[m];$('o_x').textContent='KW '+isoWeek(n)+' · Aufgang '+hm(sn[0])+' · Untergang '+hm(sn[1])+' · Geburtstag in '+bdIn()+' Tg.';
+ $('o_m').textContent=M[m].toUpperCase()+' '+y;
+ var off=(new Date(y,m,1).getDay()+6)%7,dim=new Date(y,m+1,0).getDate(),h='<div class="cr"><b class="k" style="color:#a99cf0">KW</b>',r,c,k,wk=isoWeek(n);
+ 'MDMDFSS'.split('').forEach(function(l){h+='<span style="color:#a99cf0">'+l+'</span>'});h+='</div>';
+ for(r=0;r<6;r++){var f=r*7+1-off,on=false;for(c=0;c<7;c++){k=f+c;if(k>=1&&k<=dim)on=true}if(!on){h+='<div class="cr"></div>';continue}
+  var kw=isoWeek(new Date(y,m,f+3)),cur=kw==wk&&(f<=dd&&dd<=f+6);
+  h+='<div class="cr" style="'+(cur?'background:rgba(255,255,255,.14);border-radius:2.4vh':'')+'"><b class="k">'+kw+'</b>';
+  for(c=0;c<7;c++){k=f+c;h+='<span style="'+(c>4?'color:#ff9ec0;':'')+'">'+(k>=1&&k<=dim?(k==dd?'<i style="display:inline-block;width:4.4vh;height:4.4vh;line-height:4.4vh;border-radius:50%;background:#ff9a85;color:#2b1230;font-style:normal">'+k+'</i>':k):'')+'</span>'}h+='</div>'}
+ $('o_k').innerHTML=h;var dy=Math.floor((new Date(y,m,dd)-new Date(y,0,0))/864e5),yl=(y%4==0&&y%100!=0)||y%400==0?366:365;$('o_t').textContent='Tag '+dy+' von '+yl;$('o_p').style.width=(dy/yl*100)+'%';
+ $('o_w').textContent=W?Math.round(W.current.temperature_2m)+'° · '+wd(W.current.weather_code)+' · '+CFG.ort:CFG.ort},
+function(){var it=NW.ts||[],g=Math.max(1,Math.floor(it.length/3)),b=(vs.ts%g)*3,i,x;vs.ts++;
+ if(!it.length){$('n_c').textContent='Nachrichten';$('n_h').textContent=NW.at?'Keine Meldungen verfügbar.':'Noch keine Nachrichten geladen. Internet prüfen.';return}
+ x=it[b];$('n_c').textContent=cat(x.link);$('n_s').textContent='Stand '+hm(new Date(NW.at))+' · alle 6 Std.';$('n_h').textContent=x.title;fit($('n_h'),5.6,3.2);$('n_q').textContent='tagesschau.de · '+ago(x.pubDate);
+ var u=img(x);$('n_ph').innerHTML=u?'<img src="'+esc(u)+'" style="width:100%;height:100%;object-fit:cover;opacity:.9" onerror="this.style.display=\'none\'">':'';
+ for(i=2;i<=3;i++){x=it[b+i-1];$('n_'+i+'h').textContent=x?x.title:'';fit($('n_'+i+'h'),3.4,2.2);$('n_'+i+'q').textContent=x?'tagesschau.de · '+ago(x.pubDate):''}
+ var dts='';for(i=0;i<g;i++)dts+='<i style="display:inline-block;width:1.4vh;height:1.4vh;border-radius:50%;margin-left:.8vh;background:'+(i==(vs.ts-1)%g?'#2b1230':'rgba(43,18,48,.3)')+'"></i>';$('n_g').innerHTML=dts+'<br>Gruppe '+((vs.ts-1)%g+1)+' von '+g},
+function(){var set=vs.mn%Math.max(1,Math.floor(CFG.topics.length/3));vs.mn++;$('m_s').textContent=NW.at?'Stand '+hm(new Date(NW.at))+' · alle 6 Std.':'';
+ for(var q=0;q<3;q++){var t=CFG.topics[set*3+q]||CFG.topics[q],L=NW.tp[t]||[],k=vs.tp[t]||0,x=L.length?L[k%L.length]:null,ti,sr;vs.tp[t]=k+1;$('m_c'+q).textContent=t;
+  if(x){var a=x.title,ix=a.lastIndexOf(' - ');ti=ix>0?a.substr(0,ix):a;sr=ix>0?a.substr(ix+3):(x.author||'Google News');$('m_h'+q).textContent=ti;fit($('m_h'+q),4.2,2.4);$('m_q'+q).textContent=sr+' · '+ago(x.pubDate)}
+  else{$('m_h'+q).textContent='Keine Meldung geladen.';$('m_q'+q).textContent=''}}},
+function(){if(!W){$('w_t0').textContent='WETTER · NOCH KEINE DATEN';return}var c=W.current,i,h='',n=new Date(),hrs=W.hourly,ix=0;
+ $('w_t0').textContent='WETTER · STAND '+hm(new Date(W.at))+' · STÜNDLICH';$('w_t').textContent=Math.round(c.temperature_2m)+'°';$('w_d').textContent=CFG.ort+' · '+wd(c.weather_code);
+ $('w_p').innerHTML='<span class="chip" style="background:#2c5aa3;color:#d3e6ff;margin-right:1.6vh">gefühlt '+Math.round(c.apparent_temperature)+'°</span><span class="chip" style="background:#2c5aa3;color:#d3e6ff">Feuchte '+c.relative_humidity_2m+'%</span>';
+ var sn=sun(n);$('w_x').innerHTML='Wind '+Math.round(c.wind_speed_10m)+' km/h · Böen '+Math.round(c.wind_gusts_10m)+'<br>UV '+Math.round(W.daily.uv_index_max[0])+' · '+Math.round(c.surface_pressure)+' hPa · Aufgang '+hm(sn[0])+' · Untergang '+hm(sn[1]);
+ for(i=0;i<7;i++){var dt=new Date(W.daily.time[i]+'T12:00:00');h+='<div style="-webkit-flex:1;flex:1;margin:0 .4vh;border-radius:3vh;background:rgba(255,255,255,.1);padding:1.4vh 0;text-align:center;font-size:2.2vh">'+(i?DS[dt.getDay()]:'Heute')+'<div>'+wi(W.daily.weather_code[i],5.4*10/10+'vh')+'</div><b style="font-size:2.6vh">'+Math.round(W.daily.temperature_2m_max[i])+'°</b><div style="color:#9ec1ff">'+Math.round(W.daily.temperature_2m_min[i])+'°</div><div style="color:'+(W.daily.precipitation_probability_max[i]>=30?'#ffd98e':'#7fa8e8')+';font-size:2vh">'+W.daily.precipitation_probability_max[i]+'%</div></div>'}
+ $('w_dy').innerHTML=h;var key=W.current.time.substr(0,13);for(i=0;i<hrs.time.length;i++){if(hrs.time[i].substr(0,13)==key){ix=i;break}}
+ var T=[],P=[],H=[],mn=99,mx=-99;for(i=0;i<12;i++){T.push(hrs.temperature_2m[ix+i]);P.push(hrs.precipitation_probability[ix+i]);H.push(hrs.time[ix+i].substr(11,2)+'h')}
+ for(i=0;i<12;i++){mn=Math.min(mn,T[i]);mx=Math.max(mx,T[i])}var pts=[],dots='',y;
+ for(i=0;i<12;i++){y=64-(T[i]-mn)/((mx-mn)||1)*40;pts.push(((i+.5)/12*100)+','+y);dots+='<i style="position:absolute;left:'+((i+.5)/12*100-.6)+'%;top:'+(y*0.62-0.9)+'%;width:1.8vh;height:1.8vh;margin-left:-.9vh;border-radius:50%;background:#cfe3ff"></i><span style="position:absolute;left:'+((i+.5)/12*100-4)+'%;width:8%;text-align:center;top:'+(y*0.62-12)+'%;font-size:2.3vh;color:#d3e6ff">'+Math.round(T[i])+'°</span><span style="position:absolute;left:'+((i+.5)/12*100-4)+'%;width:8%;text-align:center;top:70%;font-size:2.1vh;color:#9ec1ff">'+H[i]+'</span><span style="position:absolute;left:'+((i+.5)/12*100-4)+'%;width:8%;text-align:center;top:84%;font-size:2.1vh;color:'+(P[i]>=30?'#ffd98e':'#7fa8e8')+'">'+P[i]+'%</span>'}
+ $('w_c').innerHTML='<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;left:0;top:0;width:100%;height:62%"><polygon points="'+(.5/12*100)+',100 '+pts.join(' ')+' '+(11.5/12*100)+',100" fill="rgba(120,170,255,.25)"/><polyline points="'+pts.join(' ')+'" fill="none" stroke="#9ec9ff" stroke-width="1" vector-effect="non-scaling-stroke" style="stroke-width:.7vh"/></svg>'+dots},
+function(){if(!SP.it)return;var it=SP.it,im=it.album&&it.album.images&&it.album.images[0]?it.album.images[0].url:'';$('j_v').innerHTML=im?'<img src="'+esc(im)+'" style="width:100%;height:100%;object-fit:cover">':'';$('j_t').textContent=it.name;fit($('j_t'),8,3.6);$('j_a').textContent=(it.artists||[]).map(function(a){return a.name}).join(', ')+(it.album?' · '+it.album.name:'');$('j_g').textContent=SP.dev?'auf '+SP.dev:''},
+function(){var n=new Date(),sn=sun(n),m=moon(),tt=n-sn[0],dl=sn[1]-sn[0],day=n>=sn[0]&&n<=sn[1],t,ph,c;
+ if(day){t=tt/dl;ph=(t<.12||t>.88)?1:0}else{var a=n>sn[1]?sn[1]:new Date(sn[1]-864e5),nx=n>sn[1]?new Date(sn[0].getTime()+864e5):sn[0];t=(n-a)/(nx-a);ph=2}
+ var P=[['#4fa3ff','#6bb6ff','#8cc8ff','#ade0ff','#d7f0ff'],['#2d2260','#5b3a85','#a34e83','#e0647a','#ff9a85'],['#0c0f26','#12163a','#191d4d','#20255e','#2a2f72']][ph],h='',i;
+ for(i=0;i<5;i++)h+='<div class="a" style="left:0;right:0;top:'+i*17+'vh;height:18vh;background:'+P[i]+'"></div>';$('h_b').innerHTML=h;
+ $('h_1').setAttribute('fill',ph==0?'#1d5a45':ph==1?'#1a1235':'#0a0c1c');$('h_2').setAttribute('fill',ph==0?'#0f3a2c':ph==1?'#120a26':'#06070f');
+ var o=$('h_o');o.style.left=(8+84*t)+'%';o.style.top=(70-58*Math.sin(Math.PI*t))+'%';o.innerHTML=ph==2?moonSvg(10,'100%'):'';o.style.background=ph==2?'transparent':'#ffd699';
+ var sh='';if(ph>0)for(i=0;i<24;i++)sh+='<i style="position:absolute;left:'+(R(i,7)*100)+'%;top:'+(R(i,9)*55)+'%;width:.7vh;height:.7vh;border-radius:50%;background:#fff;-webkit-animation:tw '+(2+R(i,3)*3)+'s infinite;animation:tw '+(2+R(i,3)*3)+'s infinite"></i>';$('h_s').innerHTML=sh;
+ $('h_c').textContent=hm(n);$('h_d').textContent=D[n.getDay()]+', '+n.getDate()+'. '+M[n.getMonth()];$('h_a').textContent='Aufgang '+hm(sn[0]);$('h_m').textContent='Mond '+m.f+'%';$('h_u').textContent='Untergang '+hm(sn[1])},
+function(){var d=dayId();$('g_j').textContent=JK[d%JK.length];fit($('g_j'),5,2.8);$('g_w').textContent=WS[d%WS.length];fit($('g_w'),5,2.8);var n=new Date(),r=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1)-n,m=Math.floor(r/60000);$('g_n').textContent='Neuer Spruch in '+Math.floor(m/60)+' Std. '+m%60+' Min.'},
+function(){var d=dayId(),dt=dayId(36e5),i,b=''+'',st=function(n){var s='';for(var k=0;k<5;k++)s+=k<n?'★':'☆';return s},bl=[['Liebe',HL],['Beruf',HB],['Glück',HG]];
+ for(i=0;i<3;i++){var s=2+Math.floor(R(i+10,d)*4),L=bl[i][1];b+='<div style="margin-bottom:3.4vh"><div style="font-size:3.4vh;color:#ffd98e">'+bl[i][0]+' <span style="letter-spacing:.3vh">'+st(s)+'</span></div><div style="font-size:3.2vh;line-height:1.3;color:#fff">'+L[Math.floor(R(i+20,d)*L.length)]+'</div></div>'}
+ $('s_b').innerHTML=b;var c=HC[Math.floor(R(40,d)*HC.length)];$('s_x').innerHTML='Glückszahl <b style="font-size:3.6vh;color:#ffd98e">'+(1+Math.floor(R(41,d)*49))+'</b> &nbsp; Glücksfarbe <b style="color:'+c[1]+'">'+c[0]+'</b>';
+ var off=Math.floor(R(3,Math.floor(dt/22))*22),lb=['Gestern','Heute','Morgen'],k='';
+ for(i=0;i<3;i++){var cd=TA[((dt-1+i)*5+off+220)%22],rot=[-5,0,5][i];k+='<div style="-webkit-flex:1;flex:1;margin:0 .6vh;text-align:center"><div style="height:34vh;border:.5vh solid #ffd98e;border-radius:2vh;background:#3b2670;-webkit-transform:rotate('+rot+'deg);transform:rotate('+rot+'deg);margin-top:'+(i==1?0:2)+'vh;padding-top:2vh;color:#ffd98e"><div style="font-size:3.4vh">'+cd[0]+'</div><div style="width:9vh;height:9vh;border:.4vh solid #ffd98e;border-radius:50%;margin:2.4vh auto"><i style="display:block;width:3vh;height:3vh;border-radius:50%;background:#ffd98e;margin:2.8vh auto"></i></div><div style="font-size:2.6vh;color:#fff;line-height:1.1">'+cd[1]+'</div><div style="font-size:2.1vh;color:#e3c8ff;margin-top:.6vh">'+cd[2]+'</div></div><div style="font-size:2.4vh;color:#b99cf0;margin-top:2.6vh">'+lb[i]+'</div><div style="font-size:2.2vh;line-height:1.25;color:#e8dcff;margin-top:.6vh">'+cd[3]+'</div></div>'}
+ $('s_k').innerHTML=k;$('s_f').textContent='Nur zur Unterhaltung · neue Karten jede Nacht um 1 Uhr · Geburtstag in '+bdIn()+' Tagen'},
+function(){var r=RZ[dayId()%RZ.length],h='',i,t=r[1]+r[2];$('r_t').textContent=r[0];
+ $('r_i').innerHTML='<svg viewBox="0 0 100 100" width="100%" height="100%"><circle cx="50" cy="50" r="48" fill="'+r[6]+'"/><circle cx="50" cy="50" r="34" fill="'+r[7]+'"/><circle cx="40" cy="42" r="6" fill="#fff6e8"/><circle cx="60" cy="55" r="6" fill="#fff6e8"/><circle cx="44" cy="62" r="5" fill="#ffd98e"/><circle cx="62" cy="38" r="3" fill="#5a9a4a"/><circle cx="34" cy="55" r="2.6" fill="#5a9a4a"/></svg>';
+ $('r_p').innerHTML='<span class="chip" style="background:#3a1608;color:#ffd6b8;margin-right:1.4vh">'+t+' Min. gesamt</span><span class="chip" style="background:#fff0e4;color:#3a1608;margin-right:1.4vh">'+r[3]+' Port.</span><span class="chip" style="background:#fff0e4;color:#3a1608">Vorb. '+r[1]+' · Kochen '+r[2]+'</span>';
+ for(i=0;i<r[4].length;i++)h+='<span class="chip" style="background:#fff0e4;color:#3a1608;margin:0 1.2vh 1.4vh 0">'+esc(r[4][i])+'</span>';$('r_z').innerHTML=h;h='';
+ for(i=0;i<r[5].length;i++)h+='<div class="rw" style="margin-bottom:2.2vh"><div class="chip" style="width:4vh;height:4vh;padding:0;line-height:4vh;text-align:center;background:#3a1608;color:#fff;margin-right:2vh;border-radius:50%;-webkit-flex:none;flex:none">'+(i+1)+'</div><div style="font-size:3vh;line-height:1.25;color:#3a1608">'+esc(r[5][i])+'</div></div>';$('r_s').innerHTML=h},
+function(){var ok=PG.length&&PG[PG.length-1]>=0,v=PG.filter(function(x){return x>=0}),av=v.length?Math.round(v.reduce(function(a,b){return a+b},0)/v.length):0,i,h='',mx=Math.max.apply(null,v.concat([60])),c=navigator.connection||{};
+ $('v_d').style.background=ok?'#7bf0a0':'#ff8f7e';$('v_s').textContent=ok?'Online':'Offline';
+ var f=Math.max(.08,Math.min(1,1-av/300)),C=2*Math.PI*40;$('v_r').innerHTML='<svg viewBox="0 0 100 100" width="100%" height="100%"><circle cx="50" cy="50" r="40" fill="none" stroke="#1c6f70" stroke-width="9"/><circle cx="50" cy="50" r="40" fill="none" stroke="#8fe0e0" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+C*f+' '+C+'" transform="rotate(-90 50 50)"/></svg><div class="a l" style="left:0;right:0;top:12vh;text-align:center;font-size:12vh;color:#fff">'+av+'</div><div class="a" style="left:0;right:0;top:27vh;text-align:center;font-size:3vh;color:#8fe0e0">ms</div>';
+ for(i=0;i<24;i++){var x=PG[PG.length-24+i];h+='<i style="display:block;-webkit-flex:1;flex:1;margin:0 .35vh;border-radius:1vh;background:'+(x==null?'rgba(143,224,224,.15)':x<0?'#ffaa8a':'#8fe0e0')+';height:'+(x==null?10:x<0?100:Math.max(14,x/mx*100))+'%"></i>'}$('v_b').innerHTML=h;
+ var q=av<60?'sehr gut':av<120?'gut':'mäßig',up=Math.round((Date.now()-lastFail)/60000),av2=PG.length?Math.round(PG.filter(function(x){return x>=0}).length/PG.length*1000)/10:0;
+ $('v_x').innerHTML='Ausfälle seit Start: '+fails+'<br>Qualität: '+q+'<br>Verfügbarkeit: '+av2+'%'+(c.downlink?'<br>Download ca. '+c.downlink+' Mbit/s'+(c.effectiveType?' ('+c.effectiveType+')':''):'');$('v_u').textContent='Stabil seit '+Math.floor(up/60)+' Std. '+up%60+' Min.'},
+function(){var n=new Date(),h='',i;for(i=0;i<60;i++)h+='<i style="position:absolute;left:'+(R(i,1)*100)+'%;top:'+(R(i,2)*100)+'%;width:'+(.4+R(i,4)*.7)+'vh;height:'+(.4+R(i,4)*.7)+'vh;border-radius:50%;background:#fff;-webkit-animation:tw '+(2+R(i,5)*4)+'s infinite;animation:tw '+(2+R(i,5)*4)+'s infinite"></i>';$('z_s').innerHTML=h;
+ $('z_m').innerHTML='<svg viewBox="0 0 100 100" width="100%" height="100%"><circle cx="50" cy="50" r="40" fill="#f1ecdc"/><circle cx="64" cy="42" r="36" fill="#0b0e24"/></svg>';$('z_c').textContent=hm(n);$('z_g').textContent='Gute Nacht, '+CFG.name}];
+/* ---- Karussell ---- */
+var cur=-1,tm=null,HIDE={0:1,2:1,5:1,6:1,10:1};
+function list(){var h=new Date().getHours();if(h>=22||h<6)return [10];var o=[],i;for(i=0;i<10;i++){if(i==4&&!(CFG.spotifyId&&SP.pl))continue;o.push(i)}return o}
+function bars(e){var b=e.getElementsByClassName('pb'),i;for(i=0;i<b.length;i++){var f=b[i].firstChild;f.style.webkitTransition=f.style.transition='none';f.style.width='0';f.offsetWidth;f.style.webkitTransition=f.style.transition='width '+CFG.dur[cur]+'s linear';f.style.width='100%'}}
+function show(i){clearTimeout(tm);if(cur>=0)el[cur].className='sc';cur=i;try{if(i==4&&SP.it)EN[4]();else EN[i]()}catch(e){$('err').textContent='Fehler Szene '+(i+1)+': '+e.message}el[i].className='sc on';bars(el[i]);
+ var l=list(),h='',k;for(k=0;k<l.length;k++)h+='<i'+(l[k]==i?' class="on"':'')+'></i>';$('dots').innerHTML=h;
+ var pl=$('pill');pl.style.display=HIDE[i]?'none':'block';pl.textContent=hm(new Date())+(W?' · '+Math.round(W.current.temperature_2m)+'°':'');
+ tm=setTimeout(function(){go(1)},CFG.dur[i]*1000)}
+function go(d){var l=list(),k=l.indexOf(cur);k=k<0?0:(k+d+l.length)%l.length;show(l[k])}
+document.addEventListener('click',function(e){var t=e.target;while(t&&t!==document){if(t.className&&String(t.className).indexOf('nb')>-1)return;t=t.parentNode}go(e.clientX<window.innerWidth*.2?-1:1)});
+function ppUpdate(){$('j_pp').innerHTML='<svg viewBox="0 0 24 24" width="100%" height="100%"><circle cx="12" cy="12" r="12" fill="#9ce3b6"/>'+(SP.pl?'<path d="M8 7h3v10H8zM13 7h3v10h-3z" fill="#0b2a1f"/>':'<path d="M9 7v10l8-5z" fill="#0b2a1f"/>')+'</svg>';var p=SP.it?(SP.pos+(SP.pl?Date.now()-SP.at:0)):0,du=SP.it?SP.it.duration_ms:1;$('j_p').style.width=Math.min(100,p/du*100)+'%';function f(m){var s=Math.round(m/1000);return Math.floor(s/60)+':'+p2(s%60)}$('j_1').textContent=f(p);$('j_2').textContent=SP.it?f(du):''}
+wxGet();nwGet();ping();spPoll();
+setInterval(wxGet,36e5);setInterval(nwGet,216e5);setInterval(ping,6e4);setInterval(spPoll,15e3);setInterval(ppUpdate,1000);
+setTimeout(function(){show(list()[0])},700);
+setInterval(function(){var l=list();if(l.length==1&&cur!=l[0])show(l[0]);if(l.indexOf(cur)<0)go(1)},30000);
+})();
+</script></body></html>
