@@ -1,1136 +1,343 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard - Jean-Pascal</title>
-    <style>
-        /* =========================================
-           DESIGN SYSTEM & VARIABLEN
-           ========================================= */
-        :root {
-            --bg: #0f1218;
-            --glass-bg: rgba(255, 255, 255, 0.055);
-            --glass-border: rgba(255, 255, 255, 0.09);
-            --text-main: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.6);
-            
-            /* Pastell-Akzente */
-            --col-flieder: #B9ADE0;
-            --col-rose: #E3A5B4;
-            --col-sand: #E3C9A0;
-            --col-blau: #9DB8D9;
-            --col-salbei: #9CC5B0;
-            --col-tuerkis: #7FD1C8;
-            --col-koralle: #FF6B6B;
-        }
+  <meta charset="UTF-8">
+  <title>Pascal Wand-Dashboard (Mi Pad 3)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body { background-color: #0c0e12; color: #e1e3e8; font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; overflow: hidden; height: 100vh; width: 100vw; }
+    
+    /* Layout Framework */
+    .dashboard-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; padding: 2vmin; }
+    .header-bar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1.5vmin; border-bottom: 1px solid #232730; }
+    .header-title { font-size: 2.4vmin; font-weight: 500; text-transform: uppercase; letter-spacing: 0.15em; color: #8e95a5; }
+    .scene-dots { display: flex; gap: 0.8vmin; }
+    .dot { width: 1.2vmin; height: 1.2vmin; border-radius: 50%; background: #2a2f3d; transition: all 0.3s; }
+    .dot.active { width: 3vmin; border-radius: 1vmin; background: #9db8d9; }
+    
+    .scene-viewport { flex: 1; position: relative; margin-top: 1.5vmin; }
+    .scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; transition: opacity 0.8s ease; display: grid; grid-template-columns: 1fr 1fr; gap: 2vmin; }
+    .scene.active { opacity: 1; pointer-events: auto; }
+    .scene.single { grid-template-columns: 1fr; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+    /* Material Solid Cards (Kein Milchglas, saubere Kanten) */
+    .card { background: #161920; border: 1px solid #262b36; border-radius: 2vmin; padding: 2.2vmin; display: flex; flex-direction: column; }
+    .card-title { font-size: 2.2vmin; text-transform: uppercase; color: #9db8d9; letter-spacing: 0.1em; margin-bottom: 1.2vmin; font-weight: 500; }
+    
+    /* Szene 1: Horoskop & Tarot */
+    .tarot-cards { display: flex; gap: 1.5vmin; height: 100%; }
+    .tarot-card-box { flex: 1; background: #1c202a; border-radius: 1.2vmin; border: 1px solid #2e3544; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1vmin; color: #e3c9a0; }
+    .horo-scroll { overflow-y: auto; display: flex; flex-direction: column; gap: 1vmin; padding-right: 0.5vmin; height: 100%; }
+    .horo-box { background: #1c202a; padding: 1.2vmin; border-radius: 1vmin; border-left: 3px solid #e3c9a0; font-size: 1.9vmin; line-height: 1.4; color: #c5c9d3; }
+    .horo-box h4 { color: #e3c9a0; font-size: 1.9vmin; margin-bottom: 0.4vmin; text-transform: uppercase; }
 
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            overflow: hidden;
-            font-weight: 400;
-        }
+    /* Szene 2: Nachrichten Grid */
+    .news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5vmin; height: 100%; }
+    .news-item { background: #1c202a; padding: 1.2vmin; border-radius: 1vmin; border: 1px solid #262b36; font-size: 1.8vmin; display: flex; flex-direction: column; justify-content: space-between; }
+    .news-tag { font-size: 1.5vmin; color: #e3a5b4; text-transform: uppercase; font-weight: 500; margin-bottom: 0.5vmin; }
 
-        /* =========================================
-           LAYOUT & KARUSSELL
-           ========================================= */
-        #app {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    /* Szene 5: Rezept mit echtem Food-Foto */
+    .recipe-layout { display: flex; gap: 2vmin; height: 100%; }
+    .recipe-img { flex: 1.1; border-radius: 1.5vmin; overflow: hidden; border: 1px solid #262b36; }
+    .recipe-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .recipe-content { flex: 1.9; display: flex; flex-direction: column; gap: 1.2vmin; height: 100%; }
+    .recipe-ingredients { background: #1c202a; padding: 1.2vmin; border-radius: 1vmin; font-size: 1.8vmin; line-height: 1.5; }
+    .recipe-steps { background: #1c202a; padding: 1.2vmin; border-radius: 1vmin; font-size: 1.7vmin; line-height: 1.4; flex: 1; overflow-y: auto; }
 
-        /* Statusleiste oben */
-        #top-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 3vmin 4vmin;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 50;
-            pointer-events: none;
-        }
+    /* Szene 11: Merkzettel & Eingabe */
+    .keyboard { display: grid; grid-template-columns: repeat(10, 1fr); gap: 0.6vmin; margin-top: auto; background: #111318; padding: 1vmin; border-radius: 1vmin; }
+    .key { background: #222836; color: #fff; text-align: center; padding: 1vmin 0; border-radius: 0.5vmin; font-size: 1.8vmin; }
 
-        #date-display {
-            font-size: 2.4vmin;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-weight: 500;
-        }
-
-        #scene-indicators {
-            display: flex;
-            align-items: center;
-            pointer-events: auto;
-        }
-
-        .indicator {
-            width: 1vmin;
-            height: 1vmin;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.2);
-            margin-left: 1.2vmin;
-            transition: all 0.4s ease;
-            cursor: pointer;
-        }
-
-        .indicator.active {
-            width: 3.5vmin;
-            border-radius: 0.5vmin;
-        }
-
-        /* Fortschrittsbalken unten */
-        #progress-bar-container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 0.5vmin;
-            background-color: rgba(255, 255, 255, 0.05);
-            z-index: 50;
-        }
-
-        #progress-bar {
-            height: 100%;
-            width: 0%;
-            background-color: var(--text-main);
-            transition: width 0.1s linear;
-        }
-
-        /* Szenen-Wrapper */
-        #scenes-container {
-            flex: 1;
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-
-        .scene {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            padding: 8vmin 6vmin 6vmin 6vmin;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(1.5vmin) scale(0.98);
-            transition: opacity 0.8s ease, transform 0.8s ease, visibility 0.8s;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .scene.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0) scale(1);
-        }
-
-        /* =========================================
-           ALLGEMEINE KOMPONENTEN
-           ========================================= */
-        .card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 3.4vmin;
-            padding: 2.5vmin;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            /* Fallback für gap, da altes WebView */
-            margin-bottom: 2vmin;
-        }
-        
-        .card:last-child {
-            margin-bottom: 0;
-        }
-
-        .card-small {
-            border-radius: 2.4vmin;
-        }
-
-        .accent-title {
-            font-size: 2.4vmin;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            font-weight: 500;
-            margin-bottom: 1.5vmin;
-            color: var(--text-dim);
-        }
-
-        .text-content {
-            font-size: 2.7vmin;
-            line-height: 1.4;
-        }
-
-        /* Akzent-Tönungen für Karten */
-        .tint-gold { background: rgba(227, 201, 160, 0.1); border-color: rgba(227, 201, 160, 0.25); }
-        .tint-rose { background: rgba(227, 165, 180, 0.1); border-color: rgba(227, 165, 180, 0.25); }
-        .tint-blau { background: rgba(157, 184, 217, 0.1); border-color: rgba(157, 184, 217, 0.25); }
-        .tint-salbei { background: rgba(156, 197, 176, 0.1); border-color: rgba(156, 197, 176, 0.25); }
-        .tint-flieder { background: rgba(185, 173, 224, 0.1); border-color: rgba(185, 173, 224, 0.25); }
-
-        /* Layout Grids */
-        .grid-2 {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            flex: 1;
-        }
-        .grid-2 > .card {
-            width: 48.5%;
-        }
-
-        .grid-3 {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            flex: 1;
-        }
-        .grid-3 > .card {
-            width: 31.5%;
-        }
-
-        .flex-row { display: flex; flex-direction: row; }
-        .flex-col { display: flex; flex-direction: column; }
-        .flex-center { display: flex; align-items: center; justify-content: center; }
-
-        /* =========================================
-           SZENEN SPEZIFISCHES DESIGN
-           ========================================= */
-
-        /* Szene 1: Horoskop & Tarot */
-        .tarot-fan {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 2vmin 0;
-        }
-        .tarot-card {
-            width: 10vmin;
-            height: 16vmin;
-            border: 1px solid var(--col-sand);
-            border-radius: 1vmin;
-            margin: 0 -2vmin;
-            background: rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4vmin;
-            transform-origin: bottom center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .tarot-card:nth-child(1) { transform: rotate(-15deg); }
-        .tarot-card:nth-child(2) { transform: translateY(-2vmin); z-index: 2; }
-        .tarot-card:nth-child(3) { transform: rotate(15deg); }
-        
-        .horoscope-text {
-            border-left: 2px solid var(--col-flieder);
-            padding-left: 2vmin;
-            margin-top: 2vmin;
-        }
-
-        /* Szene 2: Nachrichten */
-        .news-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            height: 100%;
-        }
-        .news-item {
-            width: 31.5%;
-            margin-bottom: 2vmin;
-            background: var(--glass-bg);
-            border-radius: 2.4vmin;
-            padding: 2vmin;
-            border: 1px solid var(--glass-border);
-            border-top: 3px solid var(--col-rose);
-        }
-        .news-title { font-size: 2.7vmin; font-weight: 500; margin-bottom: 1vmin; line-height: 1.2; }
-        .news-meta { font-size: 1.8vmin; color: var(--text-dim); margin-top: auto; }
-
-        /* Szene 3: Wetter */
-        .weather-main { display: flex; align-items: baseline; }
-        .weather-temp { font-size: 10vmin; line-height: 1; font-weight: 500; margin-right: 2vmin; }
-        .weather-icon { font-size: 6vmin; }
-        .weather-details { font-size: 2.7vmin; margin-top: 1vmin; color: var(--text-dim); }
-        
-        .weather-chart {
-            width: 100%;
-            height: 15vmin;
-            margin-top: 3vmin;
-            position: relative;
-        }
-        .weather-chart svg {
-            width: 100%;
-            height: 100%;
-            overflow: visible;
-        }
-
-        /* Szene 4: WLAN */
-        .wlan-grid {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 100%;
-        }
-        .wlan-ring {
-            width: 25vmin;
-            height: 25vmin;
-            border-radius: 50%;
-            border: 1vmin solid rgba(255,255,255,0.1);
-            border-top-color: var(--col-salbei);
-            border-right-color: var(--col-salbei);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3vmin;
-            transform: rotate(-45deg);
-        }
-        .wlan-ring span { transform: rotate(45deg); font-size: 2.4vmin; }
-        .wlan-stats {
-            display: flex;
-            flex-wrap: wrap;
-            width: 60%;
-            justify-content: space-between;
-        }
-        .stat-box {
-            width: 48%;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 2.4vmin;
-            padding: 2vmin;
-            margin-bottom: 2vmin;
-        }
-        .stat-box .val { font-size: 3.5vmin; font-weight: 500; }
-        .stat-box .lbl { font-size: 2vmin; color: var(--text-dim); }
-
-        /* Szene 5: Rezept */
-        .recipe-layout {
-            display: flex;
-            flex: 1;
-        }
-        .recipe-image {
-            width: 35%;
-            background: radial-gradient(circle, #fff 0%, #e3c9a0 100%);
-            border-radius: 50%;
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10vmin;
-            margin-right: 4vmin;
-            align-self: center;
-        }
-        .recipe-info { flex: 1; display: flex; flex-direction: column; }
-        .recipe-title { font-size: 4.5vmin; font-weight: 500; margin-bottom: 1vmin; }
-        .recipe-meta { display: flex; font-size: 2.4vmin; color: var(--col-sand); margin-bottom: 2vmin; }
-        .recipe-meta span { margin-right: 2vmin; }
-
-        /* Szene 6: Übersicht */
-        .overview-clock { font-size: 16vmin; font-weight: 400; line-height: 1; }
-        .overview-clock .colon { color: var(--col-koralle); }
-        .overview-greeting { font-size: 3vmin; color: var(--text-dim); margin-bottom: 2vmin; }
-        .mini-calendar {
-            display: flex;
-            flex-wrap: wrap;
-            width: 30vmin;
-        }
-        .mini-calendar div {
-            width: 3.5vmin;
-            height: 3.5vmin;
-            margin: 0.3vmin;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.05);
-        }
-        .mini-calendar div.today { background: var(--col-koralle); }
-
-        /* Szene 7: Kalender */
-        .calendar-grid {
-            display: flex;
-            flex-wrap: wrap;
-            width: 100%;
-            margin-top: 2vmin;
-        }
-        .cal-day {
-            width: 14.28%;
-            height: 8vmin;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid transparent;
-            font-size: 2.4vmin;
-        }
-        .cal-day.today { border-color: var(--col-koralle); border-radius: 1vmin; }
-        .cal-day .dot { width: 0.8vmin; height: 0.8vmin; border-radius: 50%; margin-top: 0.5vmin; }
-        .cal-day .dot.event { background: var(--col-rose); }
-        .cal-day .dot.holiday { background: var(--col-tuerkis); }
-
-        /* Szene 8: Spotify */
-        .spotify-layout {
-            display: flex;
-            align-items: center;
-            height: 100%;
-        }
-        .spotify-cover {
-            width: 20vmin;
-            height: 20vmin;
-            background: rgba(156, 197, 176, 0.2);
-            border-radius: 50%;
-            margin-right: 4vmin;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .spotify-cover div {
-            width: 6vmin;
-            height: 6vmin;
-            background: var(--col-salbei);
-            border-radius: 50%;
-        }
-        .spotify-info { flex: 1; }
-        .spotify-title { font-size: 4vmin; font-weight: 500; }
-        .spotify-artist { font-size: 2.7vmin; color: var(--text-dim); margin-bottom: 2vmin; }
-        .spotify-controls { display: flex; font-size: 5vmin; }
-        .spotify-controls div { margin-right: 4vmin; cursor: pointer; }
-
-        /* Szene 9: Tagesgedanke */
-        .thought-box {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            margin-bottom: 2vmin;
-            padding: 3vmin;
-        }
-        .thought-box.black-humor { border-left: 4px solid var(--col-flieder); }
-        .thought-box.wisdom { border-left: 4px solid var(--col-sand); }
-        .thought-title { font-size: 2vmin; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1.5vmin; letter-spacing: 0.1em; }
-        .thought-text { font-size: 3.5vmin; line-height: 1.4; }
-
-        /* Szene 10: Himmel */
-        .sky-container {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-        .sky-gradient {
-            width: 100%; height: 100%;
-            background: linear-gradient(to bottom, #2b1b3d 0%, #b96a5a 40%, #e8b287 70%, #3d2a2a 100%);
-            transition: background 2s ease;
-        }
-        .sky-sun {
-            position: absolute;
-            width: 10vmin; height: 10vmin;
-            border-radius: 50%;
-            background: #ffdf91;
-            box-shadow: 0 0 5vmin #ffdf91;
-            bottom: 20%;
-            left: 50%;
-            transition: all 2s ease;
-        }
-        .sky-hills {
-            position: absolute;
-            bottom: 0; left: 0; width: 100%; height: 30%;
-            background: #1a1414;
-            border-radius: 50% 50% 0 0 / 20vmin 20vmin 0 0;
-        }
-
-        /* Szene 11: Merkzettel */
-        .notes-layout { display: flex; height: 100%; }
-        .notes-list {
-            flex: 1;
-            margin-right: 2vmin;
-            overflow-y: auto;
-        }
-        .note-item {
-            background: var(--glass-bg);
-            padding: 2vmin;
-            border-radius: 2vmin;
-            margin-bottom: 1.5vmin;
-            display: flex;
-            align-items: center;
-            font-size: 2.7vmin;
-        }
-        .note-check {
-            width: 3vmin; height: 3vmin;
-            border: 2px solid var(--col-sand);
-            border-radius: 50%;
-            margin-right: 2vmin;
-        }
-        .note-check.done { background: var(--col-sand); }
-        .countdowns {
-            width: 30%;
-            display: flex;
-            flex-direction: column;
-        }
-        .countdown-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 2vmin;
-            padding: 2vmin;
-            margin-bottom: 2vmin;
-            text-align: center;
-        }
-        .countdown-card .num { font-size: 5vmin; color: var(--col-sand); font-weight: 500; }
-        .countdown-card .lbl { font-size: 2vmin; color: var(--text-dim); }
-
-    </style>
+    /* Footer Progress Bar */
+    .progress-bar-container { height: 0.4vmin; background: #1a1d24; width: 100%; margin-top: 1.5vmin; }
+    .progress-bar { height: 100%; background: #9db8d9; width: 0%; transition: width 0.1s linear; }
+  </style>
 </head>
 <body>
 
-<div id="app">
-    <!-- Statusleiste -->
-    <div id="top-bar">
-        <div id="date-display">SAMSTAG, 7. NOVEMBER</div>
-        <div id="scene-indicators">
-            <!-- Wird per JS generiert -->
+<div class="dashboard-container">
+  <div class="header-bar">
+    <div class="header-title" id="scene-title">1. HOROSKOP UND TAROT</div>
+    <div class="scene-dots" id="scene-dots"></div>
+  </div>
+
+  <div class="scene-viewport">
+    <!-- Szene 1: Horoskop & Tarot -->
+    <div class="scene active" id="scene-1">
+      <div class="card">
+        <div class="card-title" style="color:#e3c9a0;">Drei-Karten-Legung (Rider-Waite)</div>
+        <div class="tarot-cards">
+          <div class="tarot-card-box"><b>I. DER MAGIER</b><br><br><small style="color:#a0a4b8;">Situation:<br>Aktive Schaffenskraft & Fokus auf Setup</small></div>
+          <div class="tarot-card-box"><b>X. RAD DES SCHICKSALS</b><br><br><small style="color:#a0a4b8;">Herausforderung:<br>Wandel & Neuausrichtung annehmen</small></div>
+          <div class="tarot-card-box"><b>XVII. DER STERN</b><br><br><small style="color:#a0a4b8;">Rat:<br>Klare Vision & Vertrauen in eigene Pläne</small></div>
         </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#e3c9a0;">Skorpion • 3. Dekade (Tageshoroskop)</div>
+        <div class="horo-scroll">
+          <div class="horo-box">
+            <h4>Tagesenergie & Transit</h4>
+            Pluto bildet einen starken, harmonischen Winkel zu deiner Geburtssonne (20.11.2001). Deine Intuition ist extrem scharf. Perfekt für tiefgehende technische Analysen und Systemoptimierungen.
+          </div>
+          <div class="horo-box">
+            <h4>Beruf & Projekte</h4>
+            Ausgezeichnete Phase für Eigenbau-Projekte und Code-Architektur. Dein Durchhaltevermögen zahlt sich aus – lass dich von kleinen Hardware-Hürden nicht aufhalten.
+          </div>
+          <div class="horo-box">
+            <h4>Fokus & Mindset</h4>
+            Direkte Kommunikation und klare Ziele bringen dich voran. Vermeide Ablenkungen und konzentriere dich auf das Wesentliche.
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Szenen Container -->
-    <div id="scenes-container">
-
-        <!-- SZENE 1: Horoskop & Tarot (Gold/Flieder) -->
-        <div class="scene active" id="scene-1">
-            <div class="card flex-row" style="flex:1;">
-                <!-- Tarot Links -->
-                <div class="flex-col" style="width: 40%; justify-content: center;">
-                    <div class="accent-title" style="color: var(--col-sand);">Tarot Legung</div>
-                    <div class="tarot-fan">
-                        <div class="tarot-card">🌙</div>
-                        <div class="tarot-card">☀️</div>
-                        <div class="tarot-card">⭐</div>
-                    </div>
-                    <div style="text-align: center; font-size: 2.4vmin; color: var(--text-dim);">Situation · Herausforderung · Rat</div>
-                </div>
-                <!-- Horoskop Rechts -->
-                <div class="flex-col" style="width: 60%; padding-left: 3vmin;">
-                    <div class="accent-title" style="color: var(--col-flieder);">Skorpion · 3. Dekade</div>
-                    <div class="horoscope-text">
-                        <div class="text-content" style="margin-bottom: 2vmin;">
-                            Die aktuellen Planetenkonstellationen (Mond im Trigon zu deiner Geburtssonne) lassen dich heute tiefgründiger denken. Ein guter Tag, um alten Ballast loszulassen und dich auf das Wesentliche zu konzentrieren.
-                        </div>
-                        <div class="text-content" style="color: var(--text-dim);">
-                            <strong>Liebe:</strong> Zeige dich verletzlich, das stärkt die Bindung.<br>
-                            <strong>Beruf:</strong> Intuition führt dich heute zum richtigen Ergebnis.
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Szene 2: Nachrichten -->
+    <div class="scene" id="scene-2">
+      <div class="card" style="grid-column: span 2;">
+        <div class="card-title" style="color:#e3a5b4;">Live-Nachrichten (Themenfelder)</div>
+        <div class="news-grid">
+          <div class="news-item"><div class="news-tag">Technik / Open Source</div><div>CachyOS & Arch Linux: Neue Kernel-Optimierungen für maximale Audio-Low-Latency veröffentlicht.</div><small style="color:#8e95a5;">heise • vor 1 Std.</small></div>
+          <div class="news-item"><div class="news-tag">Netzwerk & Starlink</div><div>Stabile Satellitenverbindungen im Test: Latenzwerte im Chemnitzer Raum konstant niedrig.</div><small style="color:#8e95a5;">Golem • vor 2 Std.</small></div>
+          <div class="news-item"><div class="news-tag">Musik & Hip-Hop</div><div>Studio One & Logic Pro Workflows: Neue VST3-Plugins für Vocal-Chains und Mastering im Fokus.</div><small style="color:#8e95a5;">MDR • vor 3 Std.</small></div>
+          <div class="news-item"><div class="news-tag">Gaming & Retro</div><div>PSP Custom Firmware ARK-4 Updates: MicroSD-Adapter und IPS-Mod im Praxistest.</div><small style="color:#8e95a5;">Tagesschau • vor 4 Std.</small></div>
+          <div class="news-item"><div class="news-tag">Chemnitz & Sachsen</div><div>Regionale Wirtschaft & Industrie-Instandhaltung: Neue Impulse für Fachkräfte in der Region.</div><small style="color:#8e95a5;">MDR Sachsen • vor 5 Std.</small></div>
+          <div class="news-item"><div class="news-tag">Welt & Allgemein</div><div>Globale Entwicklungen im Bereich erneuerbare Energien und autarke Versorgungssysteme.</div><small style="color:#8e95a5;">Reuters • vor 6 Std.</small></div>
         </div>
-
-        <!-- SZENE 2: Nachrichten (Rosé) -->
-        <div class="scene" id="scene-2">
-            <div class="news-grid">
-                <div class="news-item">
-                    <div class="news-title">Linux 6.8 veröffentlicht: Neue Features für CachyOS</div>
-                    <div class="news-meta">heise.de · vor 2 Std.</div>
-                </div>
-                <div class="news-item">
-                    <div class="news-title">Starlink: Neue Satelliten verbessern Latenz in Europa</div>
-                    <div class="news-meta">golem.de · vor 4 Std.</div>
-                </div>
-                <div class="news-item">
-                    <div class="news-title">Eminem kündigt neues Album für 2027 an</div>
-                    <div class="news-meta">rap.de · vor 1 Std.</div>
-                </div>
-                <div class="news-item">
-                    <div class="news-title">Counter-Strike 2 Update: Große Änderungen am Matchmaking</div>
-                    <div class="news-meta">gamestar.de · vor 3 Std.</div>
-                </div>
-                <div class="news-item">
-                    <div class="news-title">Chemnitz: Kulturhauptstadt 2025 zieht positive Bilanz</div>
-                    <div class="news-meta">mdr.de · vor 5 Std.</div>
-                </div>
-                <div class="news-item">
-                    <div class="news-title">NASA findet neue Hinweise auf Wasser auf dem Mars</div>
-                    <div class="news-meta">tagesschau.de · vor 6 Std.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SZENE 3: Wetter (Taubenblau) -->
-        <div class="scene" id="scene-3">
-            <div class="card tint-blau" style="flex: 1;">
-                <div class="flex-row" style="justify-content: space-between;">
-                    <div>
-                        <div class="weather-main">
-                            <div class="weather-temp">8°</div>
-                            <div class="weather-icon">☁️</div>
-                        </div>
-                        <div class="weather-details">Gefühlt 5° · Wind 8 km/h · UV 1</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div class="accent-title" style="color: var(--col-blau);">Chemnitz</div>
-                        <div class="text-content">Leicht bewölkt</div>
-                    </div>
-                </div>
-                
-                <!-- Wetterkurve -->
-                <div class="weather-chart">
-                    <svg viewBox="0 0 100 30" preserveAspectRatio="none">
-                        <path d="M0,20 Q20,10 40,15 T80,10 T100,15" fill="none" stroke="var(--col-blau)" stroke-width="1.5" />
-                        <circle cx="40" cy="15" r="1.5" fill="#fff" />
-                    </svg>
-                </div>
-                
-                <div class="flex-row" style="justify-content: space-between; margin-top: 2vmin;">
-                    <div style="font-size: 2.2vmin; text-align: center;">Sa<br><strong>8°</strong></div>
-                    <div style="font-size: 2.2vmin; text-align: center;">So<br><strong>7°</strong></div>
-                    <div style="font-size: 2.2vmin; text-align: center;">Mo<br><strong>8°</strong></div>
-                    <div style="font-size: 2.2vmin; text-align: center;">Di<br><strong>9°</strong></div>
-                    <div style="font-size: 2.2vmin; text-align: center;">Mi<br><strong>7°</strong></div>
-                    <div style="font-size: 2.2vmin; text-align: center;">Do<br><strong>6°</strong></div>
-                    <div style="font-size: 2.2vmin; text-align: center;">Fr<br><strong>5°</strong></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SZENE 4: WLAN (Salbei) -->
-        <div class="scene" id="scene-4">
-            <div class="wlan-grid">
-                <div class="wlan-ring">
-                    <span>Gut</span>
-                </div>
-                <div class="wlan-stats">
-                    <div class="stat-box">
-                        <div class="val">38 <span style="font-size: 2vmin;">ms</span></div>
-                        <div class="lbl">Ping</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="val">0</div>
-                        <div class="lbl">Ausfälle</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="val">142 <span style="font-size: 2vmin;">↓</span></div>
-                        <div class="lbl">Mbit/s</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="val">99,9%</div>
-                        <div class="lbl">Verfügbarkeit</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SZENE 5: Rezept (Sand) -->
-        <div class="scene" id="scene-5">
-            <div class="card tint-gold" style="flex: 1;">
-                <div class="recipe-layout">
-                    <div class="recipe-image">🍝</div>
-                    <div class="recipe-info">
-                        <div class="recipe-title">Spaghetti Bolognese</div>
-                        <div class="recipe-meta">
-                            <span>⏱ 35 Min</span>
-                            <span>👤 2 Pers.</span>
-                            <span>⭐ Einfach</span>
-                        </div>
-                        <div class="accent-title" style="margin-top: 2vmin;">Zutaten</div>
-                        <div class="text-content" style="font-size: 2.4vmin; color: var(--text-dim); margin-bottom: 2vmin;">
-                            250g Spaghetti · 250g Hackfleisch · 1 Zwiebel · 1 Karotte · 1 Stange Sellerie · 400g Tomaten (Dose) · Rotwein · Parmesan
-                        </div>
-                        <div class="accent-title">Zubereitung</div>
-                        <div class="text-content" style="font-size: 2.4vmin;">
-                            1. Gemüse fein würfeln und in Olivenöl anschwitzen. Hack zugeben und krümelig braten.<br>
-                            2. Mit Rotwein ablöschen, Tomaten zugeben und mindestens 30 Minuten köcheln lassen.<br>
-                            3. Spaghetti al dente kochen und mit der Sauce servieren.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SZENE 6: Übersicht (Flieder) -->
-        <div class="scene" id="scene-6">
-            <div class="flex-row" style="flex: 1;">
-                <div class="flex-col" style="width: 60%; margin-right: 2vmin;">
-                    <div class="card" style="flex: 1; justify-content: center;">
-                        <div class="overview-greeting" id="greeting-text">Guten Abend, Jean-Pascal.</div>
-                        <div class="overview-clock" id="clock-display">
-                            12<span class="colon">:</span>23
-                        </div>
-                        <div class="flex-row" style="margin-top: 3vmin;">
-                            <div class="card-small card" style="width: 45%; margin-right: 2vmin; padding: 1.5vmin; flex-direction: row; align-items: center;">
-                                <span style="font-size: 3vmin; margin-right: 1vmin;">☁️</span>
-                                <span style="font-size: 2.4vmin;">8° · Sa 9°</span>
-                            </div>
-                            <div class="card-small card" style="width: 45%; padding: 1.5vmin; flex-direction: row; align-items: center;">
-                                <span style="font-size: 3vmin; margin-right: 1vmin;">📰</span>
-                                <span style="font-size: 2vmin; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Linux 6.8 veröffentlicht</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex-col" style="width: 40%;">
-                    <div class="card" style="flex: 1;">
-                        <div class="accent-title" style="color: var(--col-flieder);">November</div>
-                        <div class="mini-calendar" id="mini-calendar">
-                            <!-- Wird per JS befüllt -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SZENE 7: Kalender (Flieder) -->
-        <div class="scene" id="scene-7">
-            <div class="card" style="flex: 1;">
-                <div class="accent-title" style="color: var(--col-flieder); display: flex; justify-content: space-between;">
-                    <span>November 2026</span>
-                    <span style="font-size: 2vmin; text-transform: none;">ICS lokal · Termine in Farbe</span>
-                </div>
-                <!-- Wochentage -->
-                <div class="flex-row" style="text-align: center; font-size: 2vmin; color: var(--text-dim); margin-bottom: 1vmin;">
-                    <div style="width: 14.28%;">Mo</div><div style="width: 14.28%;">Di</div><div style="width: 14.28%;">Mi</div>
-                    <div style="width: 14.28%;">Do</div><div style="width: 14.28%;">Fr</div><div style="width: 14.28%;">Sa</div><div style="width: 14.28%;">So</div>
-                </div>
-                <div class="calendar-grid" id="calendar-grid">
-                    <!-- Wird per JS befüllt -->
-                </div>
-            </div>
-        </div>
-
-        <!-- SZENE 8: Spotify (Salbei) -->
-        <div class="scene" id="scene-8">
-            <div class="card flex-row" style="flex: 1; align-items: center; padding: 4vmin;">
-                <div class="spotify-cover">
-                    <div></div>
-                </div>
-                <div class="spotify-info">
-                    <div class="accent-title" style="color: var(--col-salbei);">Jetzt läuft</div>
-                    <div class="spotify-title">Lose Yourself</div>
-                    <div class="spotify-artist">Eminem · 8 Mile Soundtrack</div>
-                    <div class="spotify-controls">
-                        <div>⏮</div>
-                        <div>⏸</div>
-                        <div>⏭</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SZENE 9: Tagesgedanke (Flieder/Sand) -->
-        <div class="scene" id="scene-9">
-            <div class="flex-col" style="flex: 1;">
-                <div class="thought-box black-humor card">
-                    <div class="thought-title">Schwarzer Humor</div>
-                    <div class="thought-text">Der frühe Vogel fängt den Wurm. Der Wurm hätte einfach liegen bleiben sollen.</div>
-                </div>
-                <div class="thought-box wisdom card">
-                    <div class="thought-title">Gedanke des Tages</div>
-                    <div class="thought-text">Du musst nicht den ganzen Weg sehen, nur den nächsten Schritt.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SZENE 10: Himmel -->
-        <div class="scene" id="scene-10">
-            <div class="sky-container">
-                <div class="sky-gradient" id="sky-grad"></div>
-                <div class="sky-sun" id="sky-sun"></div>
-                <div class="sky-hills"></div>
-            </div>
-            <div style="position: absolute; bottom: 4vmin; left: 6vmin;">
-                <div style="font-size: 2.4vmin; color: rgba(255,255,255,0.7);">Chemnitz</div>
-            </div>
-            <div style="position: absolute; bottom: 4vmin; right: 6vmin; text-align: right;">
-                <div id="sky-time" style="font-size: 2.4vmin; color: rgba(255,255,255,0.7);">15:30</div>
-            </div>
-        </div>
-
-        <!-- SZENE 11: Merkzettel (Sand/Flieder) -->
-        <div class="scene" id="scene-11">
-            <div class="notes-layout">
-                <div class="notes-list card">
-                    <div class="accent-title" style="color: var(--col-sand);">Einkauf</div>
-                    <div class="note-item"><div class="note-check"></div> Tortellini</div>
-                    <div class="note-item"><div class="note-check done"></div> Cuba Libre (Limetten)</div>
-                    <div class="note-item"><div class="note-check"></div> Mett für Sonntag</div>
-                    <div class="note-item"><div class="note-check"></div> 3D-Drucker Filament (PLA)</div>
-                </div>
-                <div class="countdowns">
-                    <div class="countdown-card">
-                        <div class="num">48</div>
-                        <div class="lbl">Tage bis Heiligabend</div>
-                    </div>
-                    <div class="countdown-card">
-                        <div class="num">13</div>
-                        <div class="lbl">Tage bis Jean-Pascal</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+      </div>
     </div>
 
-    <!-- Fortschrittsbalken -->
-    <div id="progress-bar-container">
-        <div id="progress-bar"></div>
+    <!-- Szene 3: Wetter und Klima -->
+    <div class="scene" id="scene-3">
+      <div class="card">
+        <div class="card-title" style="color:#9db8d9;">Wetter Chemnitz (Open-Meteo)</div>
+        <div style="display:flex; align-items:center; gap:2vmin; margin-bottom:2vmin;">
+          <div style="font-size:6vmin; font-weight:300;">8°C</div>
+          <div><div style="font-size:2.2vmin;">Dankondensation / Bewölkt</div><small style="color:#8e95a5;">Gefühlt 5°C • Wind 8 km/h • Feuchte 78%</small></div>
+        </div>
+        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; flex:1; display:flex; align-items:flex-end; justify-content:space-between; text-align:center;">
+          <div><small>08:00</small><br><b>6°C</b></div><div><small>10:00</small><br><b>7°C</b></div><div><small>12:00</small><br><b>9°C</b></div><div><small>14:00</small><br><b>8°C</b></div><div><small>16:00</small><br><b>7°C</b></div><div><small>18:00</small><br><b>5°C</b></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#9db8d9;">7-Tage-Trend & Klima</div>
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:1vmin; text-align:center; margin-top:1vmin;">
+          <div style="background:#1c202a; padding:1vmin; border-radius:1vmin;"><small>Sa</small><br><b>9°C</b><br><small style="color:#8e95a5;">0 mm</small></div>
+          <div style="background:#1c202a; padding:1vmin; border-radius:1vmin;"><small>So</small><br><b>7°C</b><br><small style="color:#8e95a5;">1.2 mm</small></div>
+          <div style="background:#1c202a; padding:1vmin; border-radius:1vmin;"><small>Mo</small><br><b>8°C</b><br><small style="color:#8e95a5;">0 mm</small></div>
+          <div style="background:#1c202a; padding:1vmin; border-radius:1vmin;"><small>Di</small><br><b>9°C</b><br><small style="color:#8e95a5;">0 mm</small></div>
+          <div style="background:#1c202a; padding:1vmin; border-radius:1vmin;"><small>Mi</small><br><b>7°C</b><br><small style="color:#8e95a5;">0.4 mm</small></div>
+        </div>
+        <div style="margin-top:auto; font-size:1.6vmin; color:#8e95a5; text-align:right;">Quelle: Open-Meteo.com</div>
+      </div>
     </div>
+
+    <!-- Szene 4: WLAN und Starlink -->
+    <div class="scene" id="scene-4">
+      <div class="card" style="display:flex; align-items:center; justify-content:center; text-align:center;">
+        <div class="card-title">Verbindungsqualität</div>
+        <div style="font-size:7vmin; color:#9cc5b0; font-weight:300; margin:1vmin 0;">99.9%</div>
+        <div style="font-size:2vmin; color:#8e95a5;">Stabiler Tablet-Netzwerkstatus & Ping</div>
+      </div>
+      <div class="card" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5vmin;">
+        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; display:flex; flex-direction:column; justify-content:center;"><small style="color:#8e95a5;">PING</small><b style="font-size:2.8vmin;">38 ms</b></div>
+        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; display:flex; flex-direction:column; justify-content:center;"><small style="color:#8e95a5;">DOWNLOAD</small><b style="font-size:2.8vmin;">210 Mb/s</b></div>
+        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; display:flex; flex-direction:column; justify-content:center;"><small style="color:#8e95a5;">JITTER</small><b style="font-size:2.8vmin;">0 ms</b></div>
+        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; display:flex; flex-direction:column; justify-content:center;"><small style="color:#8e95a5;">WLAN SIGNAL</small><b style="font-size:2.8vmin;">4 / 5</b></div>
+      </div>
+    </div>
+
+    <!-- Szene 5: Rezept des Tages mit ECHTFOTO -->
+    <div class="scene" id="scene-5">
+      <div class="card" style="grid-column: span 2;">
+        <div class="card-title" style="color:#e3c9a0;">Rezept des Tages • Spaghetti Bolognese (1 kg Fleisch)</div>
+        <div class="recipe-layout">
+          <div class="recipe-img">
+            <img src="https://images.unsplash.com/photo-1621996346565-e3d5d6281318?auto=format&fit=crop&w=800&q=80" alt="Spaghetti Bolognese">
+          </div>
+          <div class="recipe-content">
+            <div class="recipe-ingredients">
+              <b>Zutaten:</b> 1000g Rinderhackfleisch, 500g Spaghetti, 2 Dosen stückige Tomaten, 2 Zwiebeln, Knoblauch, Tomatenmark, Olivenöl, Kräuter.
+            </div>
+            <div class="recipe-steps">
+              <b>Zubereitungsschritte:</b><br>
+              1. Zwiebeln und Knoblauch fein würfeln und in Olivenöl in einem großen Topf glasig andünsten.<br>
+              2. Das Rinderhackfleisch (1 kg) portionsweise dazugeben und krümelig anbraten, bis es gut gebräunt ist.<br>
+              3. Tomatenmark unterrühren und kurz mit anrösten, um kräftige Röstaromen zu erzeugen.<br>
+              4. Mit den stückigen Tomaten ablöschen, mit Salz, Pfeffer und Oregano würzen.<br>
+              5. Die Sauce bei kleiner Hitze mindestens 30 Minuten sanft köcheln lassen.<<br>
+              6. Spaghetti al dente kochen, mit der heißen Bolognese-Sauce auf Tellern servieren.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Szene 6: Übersicht -->
+    <div class="scene" id="scene-6">
+      <div class="card" style="display:flex; justify-content:center; align-items:center; text-align:center;">
+        <div style="font-size:2.2vmin; color:#8e95a5;">Guten Abend, Pascal</div>
+        <div style="font-size:7.5vmin; font-weight:300; margin:1vmin 0;">12:23</div>
+        <div style="font-size:2vmin; color:#9db8d9;">Samstag, 7. November 2026</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Monatskalender & Status</div>
+        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; font-size:1.8vmin; line-height:1.6;">
+          <b>Termine heute:</b><br>
+          • 09:00 Meeting / Instandhaltung<br>
+          • 18:00 Abendessen & Planung<br>
+          <div style="margin-top:1vmin; font-size:1.6vmin; color:#8e95a5;">WLAN aktiv • Starlink Verbunden • Systemstabil</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Szene 7: Kalender und Woche -->
+    <div class="scene" id="scene-7">
+      <div class="card">
+        <div class="card-title" style="color:#b9adèo;">Monatsübersicht (November 2026)</div>
+        <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:0.5vmin; text-align:center; font-size:1.8vmin; background:#1c202a; padding:1.5vmin; border-radius:1vmin;">
+          <small>Mo</small><small>Di</small><small>Mi</small><small>Do</small><small>Fr</small><small>Sa</small><small>So</small>
+          <span></span><span></span><span></span><span></span><span></span><span style="background:#262b36; border-radius:50%;">1</span><span>2</span>
+          <span>3</span><span>4</span><span>5</span><span>6</span><span style="color:#e3a5b4; font-weight:bold;">7</span><span>8</span><span>9</span>
+          <span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+          <span>17</span><span>18</span><span>19</span><span style="color:#e3c9a0; font-weight:bold;">20</span><span>21</span><span>22</span><span>23</span>
+          <span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#b9adèo;">Anstehende Highlights</div>
+        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; font-size:1.8vmin; display:flex; flex-direction:column; gap:1vmin; flex:1; justify-content:center;">
+          <div>🎂 <b>20.11.2001</b> – Pascals Geburtstag</div>
+          <div>🎄 <b>24.12.2026</b> – Heiligabend</div>
+          <div>🎆 <b>31.12.2026</b> – Silvester & Jahreswechsel</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Szene 8: Jetzt läuft (Spotify) -->
+    <div class="scene" id="scene-8">
+      <div class="card" style="grid-column: span 2; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+        <div class="card-title" style="color:#9cc5b0;">Jetzt läuft (Spotify • iPhone)</div>
+        <div style="font-size:3vmin; font-weight:500; margin:1.5vmin 0;">Wu-Tang Clan – Enter the Wu-Tang</div>
+        <div style="font-size:2vmin; color:#8e95a5; margin-bottom:2vmin;">Album: Enter the Wu-Tang (36 Chambers)</div>
+        <div style="background:#1c202a; width:60%; height:0.8vmin; border-radius:1vmin; position:relative; margin-bottom:2vmin;">
+          <div style="background:#9cc5b0; width:45%; height:100%; border-radius:1vmin;"></div>
+        </div>
+        <div style="display:flex; gap:3vmin; font-size:3vmin;">⏮ ⏸ ⏭</div>
+      </div>
+    </div>
+
+    <!-- Szene 9: Tagesgedanke -->
+    <div class="scene" id="scene-9">
+      <div class="card" style="grid-column: span 2; display:flex; flex-direction:column; justify-content:center; padding:4vmin;">
+        <div class="card-title" style="color:#e3c9a0;">Tagesgedanke (Schwarzer Humor & Weisheit)</div>
+        <div style="background:#1c202a; padding:2.5vmin; border-radius:1.5vmin; margin-bottom:2vmin; font-size:2.2vmin; border-left:3px solid #ff6b6b; line-height:1.4;">
+          <i>„Der frühe Vogel fängt den Wurm. Aber der zweite Frosch bekommt die Fliege – Geduld zahlt sich aus.“</i>
+        </div>
+        <div style="background:#1c202a; padding:2.5vmin; border-radius:1.5vmin; font-size:2.2vmin; border-left:3px solid #9cc5b0; line-height:1.4;">
+          <i>„Du musst nicht den ganzen Weg sehen, sondern nur den nächsten Schritt im Terminal.“</i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Szene 10: Himmel -->
+    <div class="scene" id="scene-10">
+      <div class="card" style="grid-column: span 2; background: linear-gradient(135deg, #201a24, #12141a); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+        <div class="card-title">Himmel & Sonnenstand (Chemnitz)</div>
+        <div style="font-size:7vmin; font-weight:300; margin:1vmin 0;">☀️ 16:30</div>
+        <div style="font-size:2vmin; color:#e3c9a0;">Goldene Stunde • Übergang zur Dämmerung</div>
+        <div style="display:flex; gap:4vmin; margin-top:3vmin; font-size:1.8vmin; color:#8e95a5;">
+          <div>🌅 Sonnenaufgang: 07:12 Uhr</div>
+          <div>🌇 Sonnenuntergang: 16:48 Uhr</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Szene 11: Merkzettel und Countdown -->
+    <div class="scene" id="scene-11">
+      <div class="card">
+        <div class="card-title" style="color:#e3c9a0;">Lokaler Merkzettel</div>
+        <div style="background:#1c202a; padding:1.2vmin; border-radius:1vmin; font-size:1.8vmin; display:flex; flex-direction:column; gap:0.8vmin;">
+          <div>☑ Kaffeedose auffüllen</div>
+          <div>☐ Starlink Halterung prüfen</div>
+          <div>☐ 3D-Drucker Filament wechseln</div>
+          <div>☐ Skript-Backup auf GitHub laden</div>
+        </div>
+        <!-- Integrierte virtuelle QWERTZ-Tastatur für direkten Touch-Einsatz -->
+        <div class="keyboard">
+          <div class="key">Q</div><div class="key">W</div><div class="key">E</div><div class="key">R</div><div class="key">T</div><div class="key">Z</div><div class="key">U</div><div class="key">I</div><div class="key">O</div><div class="key">P</div>
+          <div class="key">A</div><div class="key">S</div><div class="key">D</div><div class="key">F</div><div class="key">G</div><div class="key">H</div><div class="key">J</div><div class="key">K</div><div class="key">L</div><div class="key">Ü</div>
+          <div class="key">Y</div><div class="key">X</div><div class="key">C</div><div class="key">V</div><div class="key">B</div><div class="key">N</div><div class="key">M</div><div class="key">Ö</div><div class="key">Ä</div><div class="key">↵</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#e3c9a0;">Countdowns</div>
+        <div style="background:#1c202a; padding:1.5vmin; border-radius:1vmin; font-size:1.9vmin; display:flex; flex-direction:column; gap:1.2vmin; justify-content:center; flex:1;">
+          <div style="display:flex; justify-content:between;"><span>🎂 Pascal Geburtstag:</span><b>13 Tage</b></div>
+          <div style="display:flex; justify-content:between;"><span>🎄 Heiligabend:</span><b>47 Tage</b></div>
+          <div style="display:flex; justify-content:between;"><span>🎆 Silvester:</span><b>54 Tage</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
 </div>
 
 <script>
-(function() {
-    // =========================================
-    // KONFIGURATION
-    // =========================================
-    var CFG = {
-        name: "Jean-Pascal",
-        location: "Chemnitz",
-        birthday: "20.11.2001",
-        sceneDuration: 20, // Standard
-        transitionDuration: 800, // ms
-        scenes: [
-            { id: "scene-1", duration: 30, color: "var(--col-sand)" },
-            { id: "scene-2", duration: 30, color: "var(--col-rose)" },
-            { id: "scene-3", duration: 20, color: "var(--col-blau)" },
-            { id: "scene-4", duration: 20, color: "var(--col-salbei)" },
-            { id: "scene-5", duration: 30, color: "var(--col-sand)" },
-            { id: "scene-6", duration: 20, color: "var(--col-flieder)" },
-            { id: "scene-7", duration: 20, color: "var(--col-flieder)" },
-            { id: "scene-8", duration: 20, color: "var(--col-salbei)" },
-            { id: "scene-9", duration: 20, color: "var(--col-flieder)" },
-            { id: "scene-10", duration: 20, color: "var(--col-tuerkis)" },
-            { id: "scene-11", duration: 20, color: "var(--col-sand)" }
-        ]
-    };
+  // ES5-kompatibles Karussell für alte Android WebViews
+  var totalScenes = 11;
+  var currentScene = 1;
+  var duration = 20000; // 20s Standard
+  var elapsed = 0;
+  
+  var titles = [
+    "1. HOROSKOP UND TAROT",
+    "2. NACHRICHTEN",
+    "3. WETTER UND KLIMA",
+    "4. WLAN UND STARLINK",
+    "5. REZEPT DES TAGES",
+    "6. UBERSICHT",
+    "7. KALENDER UND WOCHE",
+    "8. JETZT LAUFT (SPOTIFY)",
+    "9. TAGESGEDANKE",
+    "10. HIMMEL",
+    "11. MERKZETTEL UND COUNTDOWN"
+  ];
 
-    // =========================================
-    // KARUSSELL LOGIK
-    // =========================================
-    var currentSceneIndex = 0;
-    var sceneTimer;
-    var progressTimer;
-    var progressInterval = 100; // ms
-    var currentProgress = 0;
-    var isPaused = false;
-    var pauseTimeout;
+  function updateDots() {
+    var container = document.getElementById('scene-dots');
+    container.innerHTML = '';
+    for(var i=1; i<=totalScenes; i++) {
+      var dot = document.createElement('div');
+      dot.className = 'dot' + (i === currentScene ? ' active' : '');
+      container.appendChild(dot);
+    }
+  }
 
-    var container = document.getElementById('scenes-container');
-    var indicatorsContainer = document.getElementById('scene-indicators');
-    var progressBar = document.getElementById('progress-bar');
+  function switchScene() {
+    document.getElementById('scene-' + currentScene).className = 'scene';
+    currentScene = (currentScene % totalScenes) + 1;
     
-    function initCarousel() {
-        // Indikatoren bauen
-        for (var i = 0; i < CFG.scenes.length; i++) {
-            var dot = document.createElement('div');
-            dot.className = 'indicator';
-            dot.setAttribute('data-index', i);
-            dot.style.backgroundColor = CFG.scenes[i].color;
-            
-            // Klick-Event für Indikatoren
-            dot.onclick = (function(index) {
-                return function() {
-                    goToScene(index);
-                    resetPause();
-                };
-            })(i);
-            
-            indicatorsContainer.appendChild(dot);
-        }
-        
-        // Start-Szene anzeigen
-        goToScene(0);
-    }
-
-    function goToScene(index) {
-        if (index >= CFG.scenes.length) index = 0;
-        if (index < 0) index = CFG.scenes.length - 1;
-        
-        // Alte Szene ausblenden
-        var oldScene = document.getElementById(CFG.scenes[currentSceneIndex].id);
-        if (oldScene) oldScene.classList.remove('active');
-        
-        // Neue Szene einblenden
-        currentSceneIndex = index;
-        var newScene = document.getElementById(CFG.scenes[currentSceneIndex].id);
-        if (newScene) newScene.classList.add('active');
-        
-        // Indikatoren updaten
-        var dots = indicatorsContainer.querySelectorAll('.indicator');
-        for (var i = 0; i < dots.length; i++) {
-            if (i === currentSceneIndex) {
-                dots[i].classList.add('active');
-            } else {
-                dots[i].classList.remove('active');
-            }
-        }
-        
-        // Timer und Fortschritt zurücksetzen
-        startSceneTimer();
-    }
-
-    function startSceneTimer() {
-        clearTimeout(sceneTimer);
-        clearInterval(progressTimer);
-        
-        var duration = CFG.scenes[currentSceneIndex].duration * 1000;
-        currentProgress = 0;
-        progressBar.style.width = '0%';
-        progressBar.style.backgroundColor = CFG.scenes[currentSceneIndex].color;
-        
-        if (isPaused) return;
-
-        var startTime = new Date().getTime();
-        
-        progressTimer = setInterval(function() {
-            if (isPaused) return;
-            var now = new Date().getTime();
-            var elapsed = now - startTime;
-            currentProgress = (elapsed / duration) * 100;
-            
-            if (currentProgress >= 100) {
-                currentProgress = 100;
-                clearInterval(progressTimer);
-            }
-            progressBar.style.width = currentProgress + '%';
-        }, progressInterval);
-        
-        sceneTimer = setTimeout(function() {
-            if (!isPaused) {
-                goToScene(currentSceneIndex + 1);
-            }
-        }, duration);
-    }
-
-    // Touch/Pause Logik
-    function resetPause() {
-        isPaused = false;
-        startSceneTimer();
-    }
-
-    container.addEventListener('touchstart', function() {
-        isPaused = true;
-        clearTimeout(pauseTimeout);
-        clearInterval(progressTimer); // Fortschritt einfrieren
-        pauseTimeout = setTimeout(resetPause, 60000); // 60 Sekunden Pause
-    });
+    var nextEl = document.getElementById('scene-' + currentScene);
+    nextEl.className = 'scene active' + (nextEl.children.length === 1 ? ' single' : '');
     
-    container.addEventListener('mousedown', function() {
-        isPaused = true;
-        clearTimeout(pauseTimeout);
-        clearInterval(progressTimer);
-        pauseTimeout = setTimeout(resetPause, 60000);
-    });
+    document.getElementById('scene-title').innerText = titles[currentScene - 1];
+    updateDots();
+    elapsed = 0;
+  }
 
-    // =========================================
-    // DATEN & DYNAMISCHE INHALTE
-    // =========================================
-    
-    // Uhrzeit & Datum
-    function updateTime() {
-        var now = new Date();
-        
-        // Datum oben
-        var days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-        var months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-        var dateStr = days[now.getDay()] + ', ' + now.getDate() + '. ' + months[now.getMonth()];
-        document.getElementById('date-display').innerText = dateStr;
-        
-        // Begrüßung (Szene 6)
-        var hour = now.getHours();
-        var greeting = "";
-        if (hour < 11) greeting = "Guten Morgen, " + CFG.name + ".";
-        else if (hour < 18) greeting = "Schönen Tag, " + CFG.name + ".";
-        else greeting = "Guten Abend, " + CFG.name + ".";
-        
-        var greetEl = document.getElementById('greeting-text');
-        if (greetEl) greetEl.innerText = greeting;
-        
-        // Uhr in Szene 6
-        var clockEl = document.getElementById('clock-display');
-        if (clockEl) {
-            var h = now.getHours().toString();
-            var m = now.getMinutes().toString();
-            if (h.length < 2) h = "0" + h;
-            if (m.length < 2) m = "0" + m;
-            clockEl.innerHTML = h + '<span class="colon">:</span>' + m;
-        }
-        
-        // Uhr in Szene 10 (Himmel)
-        var skyTimeEl = document.getElementById('sky-time');
-        if (skyTimeEl) {
-            var h10 = now.getHours().toString();
-            var m10 = now.getMinutes().toString();
-            if (h10.length < 2) h10 = "0" + h10;
-            if (m10.length < 2) m10 = "0" + m10;
-            skyTimeEl.innerText = h10 + ":" + m10;
-        }
+  updateDots();
+  setInterval(function() {
+    elapsed += 100;
+    var pct = (elapsed / duration) * 100;
+    document.getElementById('progress-bar').style.width = pct + '%';
+    if(elapsed >= duration) {
+      switchScene();
     }
-
-    // Mini-Kalender (Szene 6) & Hauptkalender (Szene 7)
-    function buildCalendars() {
-        var now = new Date();
-        var year = now.getFullYear();
-        var month = now.getMonth();
-        
-        // Szene 6: Mini
-        var miniCal = document.getElementById('mini-calendar');
-        if (miniCal) {
-            miniCal.innerHTML = '';
-            var daysInMonth = new Date(year, month + 1, 0).getDate();
-            for (var i = 1; i <= daysInMonth; i++) {
-                var div = document.createElement('div');
-                if (i === now.getDate()) div.className = 'today';
-                miniCal.appendChild(div);
-            }
-        }
-        
-        // Szene 7: Groß
-        var calGrid = document.getElementById('calendar-grid');
-        if (calGrid) {
-            calGrid.innerHTML = '';
-            var firstDay = new Date(year, month, 1).getDay(); // 0=So, 1=Mo...
-            var offset = firstDay === 0 ? 6 : firstDay - 1; // Mo=0, So=6
-            var daysInMonth7 = new Date(year, month + 1, 0).getDate();
-            
-            // Leere Tage am Anfang
-            for (var j = 0; j < offset; j++) {
-                var empty = document.createElement('div');
-                empty.className = 'cal-day';
-                calGrid.appendChild(empty);
-            }
-            
-            // Tage
-            for (var k = 1; k <= daysInMonth7; k++) {
-                var dayDiv = document.createElement('div');
-                dayDiv.className = 'cal-day';
-                dayDiv.innerHTML = k;
-                
-                if (k === now.getDate()) dayDiv.classList.add('today');
-                
-                // Beispiel-Events (Chemnitz, Geburtstag)
-                if (k === 20) {
-                    dayDiv.innerHTML += '<div class="dot event"></div>';
-                }
-                if (k === 23) { // Buß- und Bettag Beispiel
-                    dayDiv.innerHTML += '<div class="dot holiday"></div>';
-                }
-                
-                calGrid.appendChild(dayDiv);
-            }
-        }
-    }
-
-    // Himmel-Logik (Szene 10)
-    function updateSky() {
-        var hour = new Date().getHours();
-        var grad = document.getElementById('sky-grad');
-        var sun = document.getElementById('sky-sun');
-        
-        if (!grad || !sun) return;
-
-        // Farbverläufe je nach Tageszeit
-        if (hour >= 6 && hour < 10) {
-            // Morgenrot
-            grad.style.background = 'linear-gradient(to bottom, #2b1b3d 0%, #b96a5a 40%, #e8b287 70%, #3d2a2a 100%)';
-            sun.style.background = '#ffdf91';
-            sun.style.left = '20%';
-            sun.style.bottom = '30%';
-        } else if (hour >= 10 && hour < 16) {
-            // Tag
-            grad.style.background = 'linear-gradient(to bottom, #6ca0dc 0%, #a3c9e6 50%, #e8f4f8 100%)';
-            sun.style.background = '#ffffff';
-            sun.style.left = '50%';
-            sun.style.bottom = '60%';
-            sun.style.boxShadow = '0 0 10vmin #ffffff';
-        } else if (hour >= 16 && hour < 20) {
-            // Goldene Stunde / Abend
-            grad.style.background = 'linear-gradient(to bottom, #2b1b3d 0%, #b96a5a 40%, #e8b287 70%, #3d2a2a 100%)';
-            sun.style.background = '#ff9b54';
-            sun.style.left = '80%';
-            sun.style.bottom = '20%';
-            sun.style.boxShadow = '0 0 5vmin #ff9b54';
-        } else {
-            // Nacht
-            grad.style.background = 'linear-gradient(to bottom, #050810 0%, #0f172a 50%, #1e293b 100%)';
-            sun.style.background = '#e2e8f0'; // Mond
-            sun.style.left = '70%';
-            sun.style.bottom = '70%';
-            sun.style.boxShadow = '0 0 4vmin #e2e8f0';
-        }
-    }
-
-    // Auto-Fit für Texte (verhindert Abschneiden)
-    function autoFitTexts() {
-        var textElements = document.querySelectorAll('.text-content, .thought-text, .news-title, .recipe-title');
-        for (var i = 0; i < textElements.length; i++) {
-            var el = textElements[i];
-            el.style.fontSize = ''; // Reset
-            var currentSize = parseFloat(window.getComputedStyle(el, null).getPropertyValue('font-size'));
-            var minSize = 17; // 1.7vmin in px umgerechnet (ungefähr)
-            
-            // Verkleinern, wenn Überlauf
-            while (el.scrollHeight > el.clientHeight && currentSize > minSize) {
-                currentSize -= 1;
-                el.style.fontSize = currentSize + 'px';
-            }
-        }
-    }
-
-    // =========================================
-    // INITIALISIERUNG & LOOP
-    // =========================================
-    
-    // Start
-    initCarousel();
-    updateTime();
-    buildCalendars();
-    updateSky();
-    
-    // Intervalle
-    setInterval(updateTime, 1000);
-    setInterval(updateSky, 60000); // Jede Minute Himmel prüfen
-    
-    // Auto-fit bei Szenenwechsel und Fenstergröße
-    window.addEventListener('resize', autoFitTexts);
-    setInterval(autoFitTexts, 2000); // Regelmäßiger Check
-
-    // Fully Kiosk API Integration (Optional)
-    if (typeof fully !== 'undefined') {
-        // Bewegungserkennung: Wenn Bewegung, dann Pause aufheben
-        fully.bind('onMotion', function(event) {
-            isPaused = false;
-            startSceneTimer();
-        });
-        
-        // Screen Off/On: Timer pausieren
-        fully.bind('screenOff', function(event) {
-            isPaused = true;
-            clearInterval(progressTimer);
-            clearTimeout(sceneTimer);
-        });
-        
-        fully.bind('screenOn', function(event) {
-            isPaused = false;
-            startSceneTimer();
-        });
-    }
-
-})();
+  }, 100);
 </script>
+
 </body>
 </html>
