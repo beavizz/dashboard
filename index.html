@@ -1,232 +1,241 @@
 <!DOCTYPE html>
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Apple Home Dashboard</title>
+<title>Pascals Wand-Dashboard</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",system-ui,Roboto,sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-body{display:flex;padding:2.4vh;gap:2vh;background:radial-gradient(circle at 15% 15%,#1c1c1e 0%,#000 70%)}
-
-/* Bento Grid Layout */
-.col{display:flex;flex-direction:column;gap:2vh;height:100%}
-.col-left{flex:1.2}
-.col-center{flex:1.6}
-.col-right{flex:1.2}
-
-.card{background:rgba(44,44,46,0.65);border:1px solid rgba(255,255,255,0.08);border-radius:3.2vh;padding:2.6vh 3vh;position:relative;overflow:hidden;-webkit-backdrop-filter:blur(3vh);backdrop-filter:blur(3vh);display:flex;flex-direction:column;justify-content:space-between}
-.card:hover{background:rgba(54,54,58,0.75)}
-
-/* Typografie & Elemente */
-.lbl{font-size:1.8vh;letter-spacing:.2vh;text-transform:uppercase;font-weight:600;color:rgba(235,235,245,0.6);margin-bottom:1vh}
-.time-val{font-size:11.5vh;font-weight:200;letter-spacing:-.04em;line-height:1}
-.date-val{font-size:2.6vh;font-weight:500;color:#ffd60a;margin-top:.6vh}
-.sub-txt{font-size:2.2vh;color:rgba(235,235,245,0.6);line-height:1.4}
-
-.rw{display:flex;align-items:center;justify-content:space-between}
-
-/* Spotify Widget */
-.spotify-card{background:linear-gradient(135deg, rgba(48,209,88,0.15) 0%, rgba(44,44,46,0.65) 60%)}
-.vinyl{width:14vh;height:14vh;border-radius:50%;background:linear-gradient(135deg,#222,#111);box-shadow:0 1vh 3vh rgba(0,0,0,0.5);position:relative;display:flex;align-items:center;justify-content:center;-webkit-animation:spin 20s linear infinite;animation:spin 20s linear infinite}
-.vinyl::after{content:'';position:absolute;width:4vh;height:4vh;background:#30d158;border-radius:50%;border:0.6vh solid #000}
+/* Designsystem: Schwarz, je Szene ein Farbleuchten, Glaskarten OHNE Blur (altes WebView) */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:-apple-system,"SF Pro Display","Helvetica Neue",Roboto,sans-serif}
+.sc{position:absolute;left:0;top:0;width:100%;height:100%;padding:8vh 2.4vh 4vh;opacity:0;visibility:hidden;-webkit-transition:opacity .6s;transition:opacity .6s;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.sc.on{opacity:1;visibility:visible}
+.row{display:-webkit-flex;display:flex;-webkit-flex:1;flex:1;min-height:0}
+.col{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-flex:1;flex:1;min-width:0}
+.c{-webkit-flex:1;flex:1;margin:1vh;padding:2.2vh;border-radius:3vh;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);box-shadow:0 1vh 3vh rgba(0,0,0,.45);overflow:hidden;min-width:0;font-size:3.2vh;line-height:1.3}
+.k{font-size:2.3vh;letter-spacing:.14em;text-transform:uppercase;font-weight:600;margin-bottom:1vh}
+.m{color:#98989d;font-size:2.6vh}
+.big{font-size:17vh;font-weight:100;line-height:1;letter-spacing:-.4vh}
+.num{font-size:9vh;font-weight:200;line-height:1}
+.hd{font-size:5.2vh;font-weight:600;line-height:1.1;margin-bottom:1vh}
+.pl{display:inline-block;padding:.4vh 1.6vh;margin:.6vh 1vh 0 0;border-radius:2vh;background:rgba(255,255,255,.12);font-size:2.6vh}
+.dot{display:inline-block;width:1.3vh;height:1.3vh;border-radius:50%;margin-right:1.2vh}
+#top{position:absolute;left:0;top:0;width:100%;height:6.5vh;z-index:5;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-between;justify-content:space-between;padding:0 3vh}
+#dots{display:-webkit-flex;display:flex}#dots i{display:block;width:1.2vh;height:1.2vh;border-radius:.6vh;background:rgba(255,255,255,.25);margin-right:1vh;-webkit-transition:width .3s;transition:width .3s}
+#dots i.a{width:4vh}
+#clk{font-size:3vh;font-weight:300}
+#bar{position:absolute;left:0;bottom:0;width:100%;height:.5vh;background:#fff;z-index:5;-webkit-transform-origin:0 50%;transform-origin:0 50%;-webkit-transform:scaleX(0);transform:scaleX(0)}
+#err{position:absolute;left:1vh;top:7vh;z-index:9;color:#ff453a;font-size:2.4vh}
+#mini{position:absolute;left:3vh;bottom:1.4vh;z-index:5;display:none;-webkit-align-items:center;align-items:center;background:#1c1c1e;border:1px solid rgba(255,255,255,.14);border-radius:2.4vh;padding:.8vh 2vh .8vh .8vh;font-size:2.4vh}
+#mini img{width:4.6vh;height:4.6vh;border-radius:1vh;margin-right:1.4vh;background:#30d158}
+.vin{width:48vh;height:48vh;border-radius:50%;background:repeating-radial-gradient(circle,#0b0b0b 0,#0b0b0b .5vh,#1d1d1f .6vh,#1d1d1f 1vh);box-shadow:0 2vh 5vh rgba(0,0,0,.7);position:relative;margin:auto;-webkit-animation:spin 7s linear infinite;animation:spin 7s linear infinite;-webkit-animation-play-state:paused;animation-play-state:paused}
+.vin.go{-webkit-animation-play-state:running;animation-play-state:running}
+.vin img{position:absolute;left:30%;top:30%;width:40%;height:40%;border-radius:50%;background:#30d158}
 @-webkit-keyframes spin{to{-webkit-transform:rotate(360deg)}}@keyframes spin{to{transform:rotate(360deg)}}
-
-/* Wetter & News */
-.weather-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5vh;margin-top:1.5vh}
-.mini-box{background:rgba(255,255,255,0.06);border-radius:2vh;padding:1.6vh 2vh}
-.news-title{font-size:2.8vh;font-weight:500;line-height:1.25;color:#fff;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-
-#err{position:absolute;left:1vh;top:1vh;color:#ff453a;font-size:1.8vh;z-index:9}
+@-webkit-keyframes tw{50%{opacity:.2}}@keyframes tw{50%{opacity:.2}}
+.st{position:absolute;width:.7vh;height:.7vh;border-radius:50%;background:#fff;-webkit-animation:tw 4s infinite;animation:tw 4s infinite}
+.tc{width:19vh;height:31vh;margin:0 1vh;border-radius:2vh;border:.4vh solid #ffd60a;background:#1a0f2e;overflow:hidden;text-align:center;font-size:2.4vh;position:relative}
+.tc img{width:100%;height:100%;object-fit:cover}.tc.dim{opacity:.35}
+.btn{display:inline-block;padding:1.6vh 3.4vh;margin:1vh;border-radius:3vh;background:rgba(255,255,255,.14);font-size:3.2vh}
+.key{display:inline-block;width:8.6vh;height:7.4vh;line-height:7.4vh;margin:.4vh;border-radius:1.4vh;background:rgba(255,255,255,.14);text-align:center;font-size:3.4vh}
 </style></head><body>
-
-<div id="err"></div>
-
-<!-- SPALTE 1: Uhrzeit, Datum & Wetter -->
-<div class="col col-left">
-  <!-- Uhrzeit & Begrüßung -->
-  <div class="card" style="flex: 1.1;">
-    <div>
-      <div class="lbl" id="greet_lbl">Willkommen</div>
-      <div class="time-val" id="main_time">--:--</div>
-      <div class="date-val" id="main_date">---, --. -----</div>
-    </div>
-    <div class="sub-txt" id="sun_info" style="margin-top:1vh">Sonne &amp; Kalender werden geladen...</div>
-  </div>
-
-  <!-- Wetter Widget -->
-  <div class="card" style="flex: 1.3;">
-    <div class="rw">
-      <div>
-        <div class="lbl">Wetter · Chemnitz</div>
-        <div id="wx_temp" style="font-size:6.5vh;font-weight:300">--°</div>
-      </div>
-      <div id="wx_icon"></div>
-    </div>
-    <div id="wx_desc" style="font-size:2.4vh;font-weight:500;margin-top:.5vh">Lade Wetterdaten...</div>
-    <div class="weather-grid">
-      <div class="mini-box"><div class="lbl">Gefühlt</div><div id="wx_feel" style="font-size:2.4vh;font-weight:600">--°</div></div>
-      <div class="mini-box"><div class="lbl">Luftfeuchte</div><div id="wx_hum" style="font-size:2.4vh;font-weight:600">--%</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- SPALTE 2: Nachrichten, Spotify & Rezept -->
-<div class="col col-center">
-  <!-- Nachrichten Magazin-Karte -->
-  <div class="card" style="flex: 1.3;" id="news_card">
-    <div>
-      <div class="rw"><div class="lbl" style="color:#0a84ff">Tagesschau Schlagzeile</div><div id="news_time" class="sub-txt" style="font-size:1.8vh">vorhin</div></div>
-      <div class="news-title" id="news_title">Lade aktuelle Nachrichten aus Chemnitz und der Welt...</div>
-    </div>
-    <div class="sub-txt" id="news_source" style="font-size:2vh;color:rgba(235,235,245,0.4)">tagesschau.de</div>
-  </div>
-
-  <!-- Spotify Live Player -->
-  <div class="card spotify-card" style="flex: 1.1;" id="spotify_card">
-    <div class="rw">
-      <div style="flex:1; padding-right:2vh">
-        <div class="lbl" style="color:#30d158">Spotify Live Player</div>
-        <div id="sp_title" style="font-size:3.2vh;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Keine Musik aktiv</div>
-        <div id="sp_artist" class="sub-txt" style="margin-top:.4vh">Verbinde dein Konto oder starte einen Song</div>
-      </div>
-      <div class="vinyl" id="sp_cover_box"></div>
-    </div>
-    <div class="rw" style="margin-top:1.5vh">
-      <div id="sp_dev" class="sub-txt" style="font-size:1.8vh">Status: Bereit</div>
-      <div style="font-size:2.2vh;font-weight:600;color:#30d158" id="sp_status_btn">▶ Verbinden</div>
-    </div>
-  </div>
-
-  <!-- Rezept des Tages -->
-  <div class="card" style="flex: 1;">
-    <div class="lbl" style="color:#ff9f0a">Rezept des Tages</div>
-    <div class="rw" style="align-items:flex-start">
-      <div>
-        <div id="rz_title" style="font-size:3vh;font-weight:600">Lade Rezept...</div>
-        <div id="rz_info" class="sub-txt" style="margin-top:.5vh">Zutaten und Schritte im Überblick</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- SPALTE 3: Horoskop, Tarot & System -->
-<div class="col col-right">
-  <!-- Horoskop Skorpion -->
-  <div class="card" style="flex: 1.2;">
-    <div class="lbl" style="color:#bf5af2">Skorpion · 3. Dekade</div>
-    <div id="horo_text" style="font-size:2.4vh;line-height:1.35;color:rgba(235,235,245,0.9)">Dein Tagesimpuls wird berechnet...</div>
-    <div class="sub-txt" style="font-size:1.9vh;margin-top:1vh">Geboren am 20.11.2001</div>
-  </div>
-
-  <!-- Tarot Tageskarte -->
-  <div class="card" style="flex: 1.2;">
-    <div class="lbl" style="color:#ffd60a">Tarot Tageskarte</div>
-    <div class="rw" style="align-items:center">
-      <div>
-        <div id="tarot_name" style="font-size:3vh;font-weight:600">---</div>
-        <div id="tarot_desc" class="sub-txt" style="font-size:2.1vh;margin-top:.4vh">Wird ermittelt...</div>
-      </div>
-      <div style="font-size:5vh">✨</div>
-    </div>
-  </div>
-
-  <!-- Netzwerk & System Status -->
-  <div class="card" style="flex: .8;">
-    <div class="rw">
-      <div>
-        <div class="lbl" style="color:#64d2ff">Netzwerk &amp; Ping</div>
-        <div id="ping_val" style="font-size:3.4vh;font-weight:500">-- ms</div>
-      </div>
-      <div id="net_status" style="width:3vh;height:3vh;border-radius:50%;background:#30d158"></div>
-    </div>
-  </div>
-</div>
-
+<div id="err"></div><div id="top"><div id="dots"></div><div id="clk"></div></div>
+<div id="stage"></div><div id="mini"><img id="mic" alt=""><div><div id="mit"></div><div class="m" id="mia"></div></div></div><div id="bar"></div>
 <script>
-window.onerror=function(m,u,l){document.getElementById('err').textContent='Fehler: '+m+' (Z.'+l+')'};
-(function(){
-var CFG={name:'Jean-Pascal',lat:50.83,lon:12.92,ort:'Chemnitz',birth:[2001,11,20],spotifyId:''};
-var D=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],M=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+/* ===== CFG: alles Einstellbare, jede Zeile kommentiert ===== */
+var CFG={
+ name:'Pascal',                       /* Alltagsname */
+ fullName:'Jean-Pascal',              /* nur Geburtstag und Horoskop */
+ SZENEN_REIHENFOLGE:['uebersicht','kalender','wetter','news','horo','gedanke','rezept','musik','wlan','himmel','notiz'], /* Karussell */
+ lat:50.83, lon:12.92, ort:'Chemnitz', /* Standort */
+ birth:[2001,11,20],                  /* Geburtstag J,M,T */
+ spotifyId:'b8a259d4cfa141e0ade9d446c97c0fac', /* Spotify Client-ID */
+ tageswechsel:2,                      /* Tageswechsel-Uhrzeit */
+ iv:{wetter:3600000,news:3600000,ping:60000,spotify:15000,retry:300000}, /* Intervalle in ms */
+ dauer:{min:20,max:60},               /* Szenendauer in Sekunden */
+ themen:[                             /* Nachrichten-Themenfelder */
+  {n:'Weltgeschehen',u:'https://www.tagesschau.de/index~rss2.xml'},
+  {n:'Technik und Open Source',q:'Open Source Linux'},
+  {n:'Netzwerk und Starlink',q:'Starlink'},
+  {n:'Musik und Hip-Hop',q:'Hip-Hop'},
+  {n:'Gaming und Retro',q:'Retro Gaming'},
+  {n:'Chemnitz und Sachsen',q:'Chemnitz'}],
+ TAROT_BILD:{                         /* Wikimedia-Dateinamen (ungeprüft, hier korrigieren) */
+  0:'RWS_Tarot_00_Fool.jpg',1:'RWS_Tarot_01_Magician.jpg',2:'RWS_Tarot_02_High_Priestess.jpg',3:'RWS_Tarot_03_Empress.jpg',4:'RWS_Tarot_04_Emperor.jpg',5:'RWS_Tarot_05_Hierophant.jpg',6:'RWS_Tarot_06_Lovers.jpg',7:'RWS_Tarot_07_Chariot.jpg',8:'RWS_Tarot_08_Strength.jpg',9:'RWS_Tarot_09_Hermit.jpg',10:'RWS_Tarot_10_Wheel_of_Fortune.jpg',11:'RWS_Tarot_11_Justice.jpg',12:'RWS_Tarot_12_Hanged_Man.jpg',13:'RWS_Tarot_13_Death.jpg',14:'RWS_Tarot_14_Temperance.jpg',15:'RWS_Tarot_15_Devil.jpg',16:'RWS_Tarot_16_Tower.jpg',17:'RWS_Tarot_17_Star.jpg',18:'RWS_Tarot_18_Moon.jpg',19:'RWS_Tarot_19_Sun.jpg',20:'RWS_Tarot_20_Judgement.jpg',21:'RWS_Tarot_21_World.jpg'}
+};
+/* ===== Hilfsfunktionen ===== */
 function $(i){return document.getElementById(i)}
-function hm(d){return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
-
-/* 1. Uhrzeit & Datum */
-function updateClock(){
-  var n=new Date();
-  $('main_time').textContent=hm(n);
-  $('main_date').textContent=D[n.getDay()]+', '+n.getDate()+'. '+M[n.getMonth()];
-  var h=n.getHours();
-  $('greet_lbl').textContent=(h<11&&h>=5?'Guten Morgen':h<17&&h>=11?'Hallo':h<22&&h>=17?'Guten Abend':'Gute Nacht')+', '+CFG.name;
-}
-setInterval(updateClock,1000); updateClock();
-
-/* 2. Astronomie & Sonne */
-function updateSun(){
-  var n=new Date();
-  var b=Date.UTC(n.getFullYear(),n.getMonth(),n.getDate());
-  var s1=new Date(b+720*6e4), s2=new Date(b+1080*6e4); // Schätzung oder Open-Meteo nutzen
-  $('sun_info').textContent='Wohnhaft in '+CFG.ort+' · System läuft stabil';
-}
-updateSun();
-
-/* 3. Wetter Laden (Open-Meteo) */
-function loadWeather(){
-  fetch('https://api.open-meteo.com/v1/forecast?latitude='+CFG.lat+'&longitude='+CFG.lon+'&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code&timezone=Europe/Berlin')
-  .then(r=>r.json()).then(j=>{
-    if(!j.current)return;
-    var c=j.current;
-    $('wx_temp').textContent=Math.round(c.temperature_2m)+'°';
-    $('wx_feel').textContent=Math.round(c.apparent_temperature)+'°';
-    $('wx_hum').textContent=c.relative_humidity_2m+'%';
-    var wdes=['Klar','Heiter','Wolkig','Bewölkt','Nebel','Regen','Schnee','Gewitter'];
-    $('wx_desc').textContent=wdes[c.weather_code<3?0:c.weather_code<50?2:3];
-  }).catch(()=>{});
-}
-loadWeather(); setInterval(loadWeather, 3600000);
-
-/* 4. Nachrichten (Tagesschau RSS) */
-function loadNews(){
-  fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent('https://www.tagesschau.de/index~rss2.xml'))
-  .then(r=>r.json()).then(j=>{
-    if(j.items&&j.items.length){
-      var item=j.items[0];
-      $('news_title').textContent=item.title;
-      $('news_source').textContent='tagesschau.de · Vor kurzem';
-    }
-  }).catch(()=>{});
-}
-loadNews(); setInterval(loadNews, 14400000);
-
-/* 5. Tarot & Skorpion Horoskop (Tagesbasiert) */
-var TA=[['Der Magier','Nutze deine Werkzeuge, du hast alles parat.'],['Die Herrscherin','Fülle, Kreativität und Genuss stehen an.'],['Der Eremit','Rückzug und innere Einkehr bringen Klarheit.'],['Das Rad des Schicksals','Eine positive Wendung zeichnet sich ab.']];
-var HL=['Ein ehrliches Gespräch bringt dich heute emotional weiter.','Dein technischer Fokus zahlt sich heute doppelt aus.','Vertrau auf deinen ersten Instinkt bei Entscheidungen.'];
-function loadDailyInsights(){
-  var dayIdx=Math.floor(Date.now()/864e5);
-  var tarot=TA[dayIdx%TA.length];
-  $('tarot_name').textContent=tarot[0];
-  $('tarot_desc').textContent=tarot[1];
-  
-  var horo=HL[dayIdx%HL.length];
-  $('horo_text').textContent=horo;
-}
-loadDailyInsights();
-
-/* 6. Rezept des Tages */
-var RZ=[['Shakshuka','Eier, Tomaten, Paprika & Gewürze (15 Min)'],['Spaghetti Aglio e Olio','Pasta, Knoblauch, Olivenöl, Chili (10 Min)'],['Kartoffelsuppe','Hausgemacht mit Möhren & Majoran (25 Min)'],['Chili sin Carne','Bohnen, Mais, Tomaten & Paprika (30 Min)']];
-function loadRecipe(){
-  var r=RZ[Math.floor(Date.now()/864e5)%RZ.length];
-  $('rz_title').textContent=r[0];
-  $('rz_info').textContent=r[1];
-}
-loadRecipe();
-
-/* 7. Ping / Netzwerk Test */
-function checkPing(){
-  var t=Date.now();
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=50.83&longitude=12.92&current=temperature_2m&_='+t,{cache:'no-store'})
-  .then(()=>{var ms=Date.now()-t; $('ping_val').textContent=ms+' ms'; $('net_status').style.background='#30d158';})
-  .catch(()=>{ $('ping_val').textContent='Offline'; $('net_status').style.background='#ff453a'; });
-}
-checkPing(); setInterval(checkPing, 60000);
-
-})();
+function pad(n){return n<10?'0'+n:''+n}
+function hm(t){var d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())}
+function LG(k){try{var v=localStorage.getItem('wd_'+k);return v?JSON.parse(v):null}catch(e){return null}}
+function LS(k,v){try{localStorage.setItem('wd_'+k,JSON.stringify(v))}catch(e){}}
+function xhr(m,u,h,b,ok,bad){var r=new XMLHttpRequest();r.open(m,u,true);r.timeout=15000;for(var k in h)r.setRequestHeader(k,h[k]);r.onload=function(){if(r.status>=200&&r.status<300)ok(r.responseText,r.status);else bad&&bad(r.status)};r.onerror=r.ontimeout=function(){bad&&bad(0)};r.send(b||null)}
+function K(t,c){return '<div class="k" style="color:'+c+'">'+t+'</div>'}
+function dayId(){var d=new Date(Date.now()-CFG.tageswechsel*3600000);return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()} /* Tageskennung, 2 Std zurück */
+function pick(a,k){return a[(dayId()*(2*k+3)+k*7)%a.length]}
+var WT=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+window.onerror=function(m,u,l){$('err').textContent='Fehler: '+m+' (Zeile '+l+')'};
+/* ===== Berechnungen: Ostern, Feiertage Sachsen, KW, Sonne, Mond ===== */
+function easter(y){var a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=(h+l-7*m+114)%31+1;return new Date(y,mo-1,da)}
+function hol(y){var o={},E=easter(y),i,x,L=[['Karfreitag',-2],['Ostermontag',1],['Himmelfahrt',39],['Pfingstmontag',50]];
+ function s(d,n){o[(d.getMonth()+1)+'-'+d.getDate()]=n}
+ s(new Date(y,0,1),'Neujahr');for(i=0;i<4;i++){x=new Date(E.getTime());x.setDate(x.getDate()+L[i][1]);s(x,L[i][0])}
+ s(new Date(y,4,1),'Tag der Arbeit');s(new Date(y,9,3),'Tag der Einheit');s(new Date(y,9,31),'Reformationstag');
+ x=new Date(y,10,22);while(x.getDay()!=3)x.setDate(x.getDate()-1);s(x,'Buß- und Bettag');
+ s(new Date(y,11,25),'1. Weihnachtstag');s(new Date(y,11,26),'2. Weihnachtstag');return o}
+function kw(d){var t=new Date(d.getFullYear(),d.getMonth(),d.getDate());t.setDate(t.getDate()+3-(t.getDay()+6)%7);var w=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-w)/864e5-3+(w.getDay()+6)%7)/7)}
+function doy(d){return Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(d.getFullYear(),0,0))/864e5)}
+function sun(d){var R=Math.PI/180,g=2*Math.PI/365*(doy(d)-1),eq=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g)),de=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g)-0.002697*Math.cos(3*g)+0.00148*Math.sin(3*g),la=CFG.lat*R,c=Math.cos(90.833*R)/(Math.cos(la)*Math.cos(de))-Math.tan(la)*Math.tan(de);
+ if(c>1||c<-1)return null;var ha=Math.acos(c)/R,off=-d.getTimezoneOffset();return {r:720-4*(CFG.lon+ha)-eq+off,s:720-4*(CFG.lon-ha)-eq+off}} /* NOAA-Näherung, Minuten ab 0 Uhr */
+function mm(m){return pad(Math.floor(m/60))+':'+pad(Math.round(m%60))}
+function mAge(d){return((d.getTime()/864e5+2440587.5-2451550.1)%29.530588+29.530588)%29.530588}
+function mName(a){return a<1.85?'Neumond':a<5.54?'zunehmende Sichel':a<9.22?'erstes Viertel':a<12.91?'zunehmender Mond':a<16.61?'Vollmond':a<20.3?'abnehmender Mond':a<23.99?'letztes Viertel':a<27.68?'abnehmende Sichel':'Neumond'}
+function mPct(a){return Math.round((1-Math.cos(2*Math.PI*a/29.530588))/2*100)}
+function mNext(t){var d=((t-mAge(new Date()))+29.530588)%29.530588;return new Date(Date.now()+d*864e5)}
+function dd(d){return d.getDate()+'. '+MN[d.getMonth()]}
+function nxt(m,d){var n=new Date(),t=new Date(n.getFullYear(),n.getMonth(),n.getDate()),x=new Date(n.getFullYear(),m-1,d);if(x<t)x=new Date(n.getFullYear()+1,m-1,d);return Math.round((x-t)/864e5)}
+function evs(){return LG('ev')||[]} /* eigene Termine: [{d:'2026-11-14',t:'Text'}] */
+function today(){var n=new Date(),H=hol(n.getFullYear()),o=[],k=(n.getMonth()+1)+'-'+n.getDate(),i,e=evs(),s=n.getFullYear()+'-'+pad(n.getMonth()+1)+'-'+pad(n.getDate()),su=sun(n);
+ if(H[k])o.push(['#40c8e0',H[k]]);if(n.getMonth()+1==CFG.birth[1]&&n.getDate()==CFG.birth[2])o.push(['#ff375f','Geburtstag']);
+ for(i=0;i<e.length;i++)if(e[i].d==s)o.push(['#bf5af2',e[i].t]);if(su)o.push(['#ff9f0a','Sonnenuntergang '+mm(su.s)]);
+ if(W&&W.d.daily.precipitation_probability_max[0]>=50)o.push(['#0a84ff','Regen wahrscheinlich ('+W.d.daily.precipitation_probability_max[0]+' %)']);
+ var t=LG('todo')||[],c=0;for(i=0;i<t.length;i++)if(!t[i].d)c++;if(c)o.push(['#ffd60a',c+' offene Aufgaben']);return o}
+/* ===== Daten: Wetter, Nachrichten, Ping, Akku ===== */
+var W=LG('wx'),N=LG('nw')||{},P=[],PF=0,PS=Date.now(),BAT=null;
+var WU='https://api.open-meteo.com/v1/forecast?latitude='+CFG.lat+'&longitude='+CFG.lon+'&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,surface_pressure,weather_code,precipitation&hourly=temperature_2m,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max,sunrise,sunset&timezone=Europe/Berlin&forecast_days=7';
+var retryT={};
+function again(n,f){if(retryT[n])return;retryT[n]=setTimeout(function(){retryT[n]=0;f()},CFG.iv.retry)}
+function hourly(f,iv){f();(function s(){var n=Date.now();setTimeout(function(){f();s()},iv-(n%iv)+500)})()} /* auf volle Stunde ausgerichtet */
+function loadW(){xhr('GET',WU,{},null,function(t){W={t:Date.now(),d:JSON.parse(t)};LS('wx',W);dirty('wetter')},function(){again('w',loadW)})}
+function loadN(){var i,fail=0;CFG.themen.forEach(function(th,i){var u=th.u||'https://news.google.com/rss/search?q='+encodeURIComponent(th.q)+'&hl=de&gl=DE&ceid=DE:de';
+ xhr('GET','https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(u),{},null,function(t){var j=JSON.parse(t);if(j.items&&j.items.length){N[i]={t:Date.now(),it:j.items.slice(0,2)};LS('nw',N);dirty('news')}},function(){again('n'+i,loadN)})})}
+function ping(){var s=Date.now();xhr('GET','https://api.open-meteo.com/v1/forecast?latitude='+CFG.lat+'&longitude='+CFG.lon+'&current=temperature_2m&_='+s,{},null,function(){P.push({ok:1,ms:Date.now()-s});if(P.length>40)P.shift();dirty('wlan')},function(){P.push({ok:0});PF++;PS=Date.now();if(P.length>40)P.shift();dirty('wlan')})} /* HTTP-Test, KEIN ICMP */
+if(navigator.getBattery)navigator.getBattery().then(function(b){BAT=b});
+var DIRTY={};function dirty(k){DIRTY[k]=1}
+/* ===== Textbibliotheken (klein, später in Paketen erweiterbar) ===== */
+var HR={energie:['Der Tag verlangt Ruhe vor Tempo. Wer langsam beginnt, trifft am Abend die besseren Entscheidungen.','Deine Energie ist gesammelt und tief. Nutze sie für eine Sache statt für zehn.','Ein stiller Antrieb trägt dich heute weiter als Lautstärke.'],
+ charakter:['Du spürst früh, was in der Luft liegt. Vertraue der Intuition und prüfe sie kurz.','Kontrolle gibt dir Halt, doch heute darf etwas offen bleiben.','Grübeln ist die Schattenseite deiner Tiefe: Schreib den Gedanken auf, dann lass ihn los.'],
+ liebe:['Echte Nähe entsteht heute durch ehrliches Zuhören, nicht durch große Gesten.','Sag einer wichtigen Person, was du an ihr schätzt. Das kostet wenig und bleibt lange.','Beziehungen brauchen Raum und Verbindlichkeit. Heute zählt die Verbindlichkeit.'],
+ beruf:['Technik: Räume ein Werkzeug oder Projekt auf, das dich schon länger bremst.','Kreatives: Ein roher Entwurf schlägt den perfekten Plan. Nimm heute etwas auf.','Finanzen: Prüfe einen laufenden Posten und streiche, was du nicht nutzt.'],
+ fokus:['Aufgabe: eine Sache fertig machen. Achten auf: Pausen. Vermeiden: unnötige Diskussionen.','Aufgabe: Liegengebliebenes abschließen. Achten auf: dein Tempo. Vermeiden: Multitasking.','Aufgabe: einen klaren Plan für morgen schreiben. Achten auf: Schlaf. Vermeiden: Grübelschleifen.'],
+ impuls:['Beginne klein, aber beginne jetzt.','Tiefe schlägt Tempo.','Heute reicht ein ehrlicher Schritt.']},
+ FARBE=['Gold','Tiefviolett','Nachtblau','Bordeaux'];
+var TA='Der Narr|Aufbruch;Der Magier|Wille und Geschick;Die Hohepriesterin|Intuition;Die Herrscherin|Fülle;Der Herrscher|Ordnung;Der Hierophant|Überlieferung;Die Liebenden|Entscheidung;Der Wagen|Willenskraft;Die Kraft|Sanfte Stärke;Der Eremit|Einkehr;Das Rad des Schicksals|Wandel;Die Gerechtigkeit|Ausgleich;Der Gehängte|Perspektivwechsel;Der Tod|Abschluss und Neubeginn;Die Mäßigkeit|Balance;Der Teufel|Bindung;Der Turm|Umbruch;Der Stern|Hoffnung;Der Mond|Unbewusstes;Die Sonne|Klarheit;Das Gericht|Erneuerung;Die Welt|Vollendung'.split(';'),
+ RN='0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI'.split(' ');
+var TH={reim:[{l:['Im Studio brennt noch Licht,','der Beat sitzt, die Zeile spricht,','was heute nicht gelingen will,','wird morgen laut und nie mehr still.'],w:'Takt',b:'gleichmäßige Zeiteinheit im Beat',r:'packt, exakt, Kontrakt'},{l:['Ich schreib die Nacht in Zeilen klein,','der Bass trägt mich ins Morgenlicht,','es muss nicht laut, es muss nur rein,','denn jeder Satz hat sein Gewicht.'],w:'Flow',b:'der fließende Rhythmus einer Zeile',r:'so, froh, Show'}],
+ humor:['Ich bin nicht faul, ich laufe im Energiesparmodus.','Optimismus ist, wenn man den Absturz als Flugstunde verbucht.','Mein Zeitmanagement ist ausgezeichnet: Ich verschiebe alles pünktlich.'],
+ weis:['Disziplin ist die Freundlichkeit, die du deinem späteren Ich schuldest.','Wer sich selbst nie widerspricht, hat vermutlich aufgehört nachzudenken.','Nicht jede Stille ist Leere. Manche ist eine Antwort.'],
+ wiss:[{f:'Warum leuchtet der Mond?',e:'Er erzeugt kein eigenes Licht, sondern reflektiert Sonnenlicht, etwa 12 Prozent davon.',s:'NASA'},{f:'Wie lange braucht Sonnenlicht zur Erde?',e:'Rund acht Minuten und zwanzig Sekunden bei etwa 150 Millionen Kilometern Abstand.',s:'NASA'}]};
+var RZ=[{n:'Spaghetti Bolognese',p:4,t:'90 Min.',s:'mittel',c:'#ff9f0a',z:['500 g Hackfleisch','400 g Spaghetti','1 Zwiebel','2 Knoblauchzehen','400 g Tomaten','2 EL Tomatenmark','1 Möhre'],k:['Zwiebel, Möhre, Knoblauch fein würfeln.','Öl erhitzen, Gemüse 5 Min. andünsten.','Hack krümelig scharf anbraten.','Tomatenmark kurz mitrösten.','Tomaten zugeben, salzen, 45 Min. köcheln.','Spaghetti kochen und mit Sauce servieren.'],g:'Für 1 kg Hack: 800 g Spaghetti, 2 Zwiebeln, 4 Knoblauchzehen, 800 g Tomaten, 4 EL Mark, 2 Möhren'},
+ {n:'Chili con Carne',p:4,t:'60 Min.',s:'leicht',c:'#ff453a',z:['500 g Hackfleisch','1 Dose Kidneybohnen','1 Dose Mais','400 g Tomaten','1 Paprika, 1 Zwiebel','2 TL Chili, 1 TL Kreuzkümmel'],k:['Zwiebel und Paprika würfeln.','Hack in heißem Öl krümelig anbraten.','Zwiebel und Paprika zugeben, 5 Min. braten.','Gewürze kurz mitrösten.','Tomaten, Bohnen und Mais zugeben.','Salzen und 30 Min. köcheln lassen.']}];
+/* ===== Szenen: jede liefert HTML, wird nur bei Anzeige oder neuen Daten gebaut ===== */
+var SC={};
+SC.uebersicht=function(){var n=new Date(),h=n.getHours(),b=n.getMonth()+1==CFG.birth[1]&&n.getDate()==CFG.birth[2],age=n.getFullYear()-CFG.birth[0],
+ g=b?'Alles Gute zum Geburtstag, '+CFG.fullName+'! ('+age+')':(h<5?'Gute Nacht':h<11?'Guten Morgen':h<18?'Guten Tag':h<22?'Guten Abend':'Gute Nacht')+', '+CFG.name+'.',o='',t=today(),i,w=W&&W.d.current;
+ for(i=0;i<t.length;i++)o+='<div><span class="dot" style="background:'+t[i][0]+'"></span>'+t[i][1]+'</div>';
+ var tx=Math.round(P.length?P[P.length-1].ms||0:0);
+ return '<div class="row" style="flex:2"><div class="c" style="flex:1.7"><div class="hd" style="color:#d9a8ff">'+g+'</div><div class="big clk2">'+pad(h)+'<span style="color:#ff453a">:</span>'+pad(n.getMinutes())+'</div><div style="margin-top:1.4vh">'+WT[n.getDay()]+', '+dd(n)+' '+n.getFullYear()+'</div><span class="pl">KW '+kw(n)+'</span><span class="pl">Tag '+doy(n)+'</span><span class="pl" style="background:rgba(255,55,95,.3)">Geburtstag in '+nxt(CFG.birth[1],CFG.birth[2])+' Tagen</span></div><div class="col"><div class="c">'+K('Heute','#d9a8ff')+o+'</div><div class="c">'+K(CFG.ort,'#64d2ff')+(w?'<div class="num">'+Math.round(w.temperature_2m)+'°</div>'+wtx(w.weather_code):'<span class="m">Wetter nicht verfügbar</span>')+'</div></div></div>'
+ +'<div class="row" style="flex:.8"><div class="c">'+K('Netz','#30d158')+(P.length&&P[P.length-1].ok?'Online · '+tx+' ms':'<span class="m">wird geprüft</span>')+'</div><div class="c">'+K('Akku','#64d2ff')+(BAT?Math.round(BAT.level*100)+' %':'<span class="m">nicht verfügbar</span>')+'</div><div class="c">'+K('Musik','#30d158')+'<span id="ovm">'+(SP.pl?SP.pl.t:'Nichts läuft')+'</span></div><div class="c">'+K('Impuls','#ffd60a')+pick(HR.impuls,5)+'</div></div>'};
+function wtx(c){return c==0?'Klar':c<4?'Wolkig':c<50?'Nebel':c<70?'Regen':c<80?'Schnee':c<90?'Schauer':'Gewitter'}
+function ico(c,s){return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 40 40">'+(c<3?'<circle cx="16" cy="16" r="9" fill="#ffd60a"/>':'')+(c>0?'<ellipse cx="23" cy="25" rx="13" ry="8" fill="#e5e5ea"/>':'')+(c>=50?'<path d="M14 34l-2 4M22 34l-2 4M30 34l-2 4" stroke="#64d2ff" stroke-width="2"/>':'')+'</svg>'}
+SC.kalender=function(){var n=new Date(),y=n.getFullYear(),m=n.getMonth(),f=new Date(y,m,1),off=(f.getDay()+6)%7,L=new Date(y,m+1,0).getDate(),H=hol(y),e=evs(),s='<div style="display:flex;text-align:center" class="m"><div style="width:12%">KW</div>',i,j,d,st,c,r;
+ for(i=0;i<7;i++)s+='<div style="width:12.5%">'+'MDMDFSS'.charAt(i)+'</div>';s+='</div>';
+ for(r=1-off;r<=L;r+=7){s+='<div style="display:flex;text-align:center;margin-top:.6vh"><div class="m" style="width:12%">'+kw(new Date(y,m,Math.max(r,1)+(r<1?-r+1:0)+3-(r<1?0:0)))+'</div>';
+  for(j=0;j<7;j++){d=r+j;st='';if(d>=1&&d<=L){c=H[(m+1)+'-'+d];if(d==n.getDate())st='background:#ff453a;';else if(c)st='background:#40c8e0;color:#00282e;';else if(m+1==CFG.birth[1]&&d==CFG.birth[2])st='background:#ff375f;';else for(i=0;i<e.length;i++)if(e[i].d==y+'-'+pad(m+1)+'-'+pad(d))st='background:#bf5af2;'}
+   s+='<div style="width:12.5%;padding:.9vh 0;border-radius:2vh;'+st+'">'+(d>=1&&d<=L?d:'')+'</div>'}s+='</div>'}
+ var up='',k,x,H2,cnt=0;for(i=0;i<60&&cnt<5;i++){x=new Date(y,m,n.getDate()+i);H2=hol(x.getFullYear())[(x.getMonth()+1)+'-'+x.getDate()];if(H2){up+='<div><span class="dot" style="background:#40c8e0"></span>'+dd(x)+' '+H2+'</div>';cnt++}if(x.getMonth()+1==CFG.birth[1]&&x.getDate()==CFG.birth[2]){up+='<div><span class="dot" style="background:#ff375f"></span>'+dd(x)+' Geburtstag</div>';cnt++}}
+ return '<div class="row"><div class="c" style="flex:1.8"><div class="hd">'+MN[m]+' <span style="color:#ff453a">'+y+'</span></div>'+s+'</div><div class="col"><div class="c" style="text-align:center;background:rgba(255,69,58,.2)"><div class="m">'+WT[n.getDay()]+'</div><div class="big">'+n.getDate()+'</div><div>KW '+kw(n)+'</div></div><div class="c">'+K('Als Nächstes','#ff6b61')+up+'<div class="m" style="margin-top:1vh"><span class="dot" style="background:#ff453a"></span>heute <span class="dot" style="background:#bf5af2;margin-left:1vh"></span>Termin</div></div></div></div>'};
+SC.wetter=function(){if(!W)return '<div class="c">'+K('Wetter','#0a84ff')+'<div class="hd">nicht verfügbar</div><div class="m">Sobald eine Verbindung besteht, erscheint der Stand.</div></div>';
+ var c=W.d.current,h=W.d.hourly,d=W.d.daily,i0=0,i,s='',pts=[],mn=99,mx=-99,t=new Date(),key=t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate())+'T'+pad(t.getHours())+':00';
+ for(i=0;i<h.time.length;i++)if(h.time[i]==key){i0=i;break}
+ for(i=0;i<12;i++){var v=h.temperature_2m[i0+i];if(v<mn)mn=v;if(v>mx)mx=v;pts.push(v)}
+ var pl='';for(i=0;i<12;i++)pl+=(i*60)+','+(70-(pts[i]-mn)/(mx-mn||1)*60)+' ';
+ for(i=1;i<6;i++){var dx=new Date(d.time[i]);s+='<div class="c" style="text-align:center;margin:.4vh">'+WT[dx.getDay()].substr(0,2)+'<br>'+ico(d.weather_code[i],44)+'<br>'+Math.round(d.temperature_2m_max[i])+'° <span class="m">'+Math.round(d.temperature_2m_min[i])+'°</span></div>'}
+ var hint=[],pm=0;for(i=0;i<12;i++)pm=Math.max(pm,h.precipitation_probability[i0+i]||0);if(c.apparent_temperature<8)hint.push('Jacke empfohlen');if(pm>=40)hint.push('Schirm mitnehmen ('+pm+' %)');if(d.uv_index_max[0]>=3)hint.push('Sonnenschutz (UV '+Math.round(d.uv_index_max[0])+')');if(!hint.length)hint.push('Keine besonderen Hinweise');
+ return '<div class="row" style="flex:1.5"><div class="c" style="flex:1.1"><div class="m">'+CFG.ort+' · '+wtx(c.weather_code)+'</div><div class="big" style="font-size:24vh">'+Math.round(c.temperature_2m)+'°</div>'+'<div>gefühlt '+Math.round(c.apparent_temperature)+'° · Hoch '+Math.round(d.temperature_2m_max[0])+'° · Tief '+Math.round(d.temperature_2m_min[0])+'°</div></div><div class="c" style="flex:1.5">'+K('Nächste 12 Stunden','#0a84ff')+'<svg viewBox="0 0 660 80" width="100%" height="22vh"><polyline points="'+pl+'" fill="none" stroke="#64d2ff" stroke-width="3"/></svg><div class="m">'+hint.join(' · ')+'</div></div></div><div class="row" style="flex:.9">'+s+'</div>'
+ +'<div class="row" style="flex:.8"><div class="c">Wind<br>'+Math.round(c.wind_speed_10m)+' km/h</div><div class="c">Böen<br>'+Math.round(c.wind_gusts_10m)+' km/h</div><div class="c">Feuchte<br>'+c.relative_humidity_2m+' %</div><div class="c">Niederschlag<br>'+c.precipitation+' mm</div><div class="c">Druck<br>'+Math.round(c.surface_pressure)+' hPa</div><div class="c">Sonne<br>'+d.sunrise[0].substr(11)+' / '+d.sunset[0].substr(11)+'</div></div><div class="m" style="padding:0 2vh">Quelle Open-Meteo · Stand '+hm(W.t)+'</div>'};
+SC.news=function(){var i,s='',x,it,tx,age,cl=['#ff375f','#64d2ff','#30d158','#ff9f0a','#bf5af2','#ffd60a'];
+ for(i=0;i<6;i++){x=N[i];it=x&&x.it[0];age=it?Math.max(1,Math.round((Date.now()-new Date(it.pubDate.replace(' ','T')+'Z').getTime())/60000)):0;
+  tx=it?'<div class="fit" style="font-size:'+(i?3.6:5.4)+'vh;font-weight:600;line-height:1.15;height:'+(i?'11vh':'24vh')+';overflow:hidden">'+it.title+'</div><div class="m">'+(it.description?'':'')+(it.author||'')+(isNaN(age)?'':' · vor '+age+' Min.')+'</div>':'<div class="m">Noch keine Meldung geladen</div>';
+  s+=(i==0?'<div class="row" style="flex:1.7"><div class="c" style="flex:2;background:rgba(255,55,95,.18)">':(i==1?'<div class="col">':'')+'<div class="c">')+K(CFG.themen[i].n,cl[i])+tx+'</div>'+(i==0?'':'')+(i==0?'':'');if(i==0)s+='';
+  if(i==3)s+='</div></div><div class="row" style="flex:1">'}
+ return s+'</div>'};
+SC.horo=function(){var m=mAge(new Date()),a=dayId()%22,b=a,c,i,pos=['Situation','Herausforderung','Rat'],ids=[a],s='',cards;
+ b=(a+7+dayId()%5)%22;while(b==a)b=(b+1)%22;c=(b+5+dayId()%7)%22;while(c==a||c==b)c=(c+1)%22;ids=[a,b,c];
+ for(i=0;i<3;i++)s+='<div style="text-align:center" class="ns"><div class="tc" data-t="'+i+'" onclick="tapC('+i+')"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/'+CFG.TAROT_BILD[ids[i]]+'?width=400" onerror="fb(this,'+ids[i]+')" alt=""></div><div class="m">'+pos[i]+'</div></div>';
+ TC=ids;
+ return '<div class="row"><div class="c" style="flex:1.5">'+K(CFG.fullName+' · Skorpion · 3. Dekade','#ffd60a')+'<div class="hd">Tagesenergie</div>'+pick(HR.energie,1)+'<p style="margin-top:1.4vh"><b>Charakter:</b> '+pick(HR.charakter,2)+'</p><p style="margin-top:1.4vh"><b>Liebe:</b> '+pick(HR.liebe,3)+'</p></div><div class="col"><div class="c"><p><b>Beruf:</b> '+pick(HR.beruf,4)+'</p><p style="margin-top:1.4vh"><b>Fokus:</b> '+pick(HR.fokus,6)+'</p></div><div class="c">'+K('Tagesimpuls','#bf5af2')+pick(HR.impuls,7)+'<br><span class="pl">Glückszahl '+(dayId()%9+1)+'</span><span class="pl">'+FARBE[dayId()%4]+'</span><span class="pl">Mond '+mPct(m)+' %, '+mName(m)+'</span></div></div></div><div class="row" style="flex:1.2"><div class="c" style="display:-webkit-flex;display:flex;-webkit-justify-content:space-around;justify-content:space-around"><div id="tcs" style="display:flex">'+s+'</div><div id="tdet" style="-webkit-flex:1;flex:1;padding-left:2vh" class="m">Karte antippen für die Deutung.</div></div></div><div class="m" style="padding:0 2vh">Symbolische Deutung, zur Unterhaltung · Rider-Waite-Smith (Pamela Colman Smith, 1909) · Deutung nach Waite, 1911. Echt berechnet: Mondphase.</div>'};
+var TC=[],TO=-1;
+function fb(img,id){img.parentNode.innerHTML='<svg viewBox="0 0 100 160" width="100%" height="100%"><rect width="100" height="160" fill="#1a0f2e"/><text x="50" y="40" text-anchor="middle" font-size="22" fill="#ffd60a">'+RN[id]+'</text><circle cx="50" cy="85" r="18" fill="none" stroke="#ffd60a" stroke-width="2"/><text x="50" y="140" text-anchor="middle" font-size="10" fill="#ffd60a">'+TA[id].split('|')[0]+'</text></svg>'}
+function tapC(i){var p=['Situation','Herausforderung','Rat'],cs=document.querySelectorAll('.tc'),j,a=TA[TC[i]].split('|');if(TO==i){TO=-1;for(j=0;j<3;j++)cs[j].className='tc';$('tdet').innerHTML='Karte antippen für die Deutung.';return}
+ TO=i;for(j=0;j<3;j++)cs[j].className='tc'+(j==i?'':' dim');$('tdet').innerHTML='<div class="hd" style="color:#ffd60a">'+RN[TC[i]]+' · '+a[0]+'</div><div style="color:#fff">Kernbedeutung: '+a[1]+'.</div><p style="margin-top:1vh;color:#fff">Als <b>'+p[i]+'</b> zeigt sie, worauf du heute achten darfst: '+a[1]+' bestimmt den Ton.</p>'}
+SC.gedanke=function(){var r=pick(TH.reim,1),w=pick(TH.wiss,2),l='',i;for(i=0;i<4;i++)l+='<div style="font-size:4.6vh;font-weight:700;'+(i>1?'opacity:.5':'')+'">'+r.l[i]+'</div>';
+ return '<div class="row"><div class="c" style="flex:1.4;background:rgba(255,214,10,.12)">'+K('Reim des Tages','#ffd60a')+l+'<div class="m" style="margin-top:1.4vh">Wort: '+r.w+' ('+r.b+') · Reime: '+r.r+'</div></div><div class="c">'+K('Schwarzer Humor','#ff9f0a')+'<div style="font-size:4vh">'+pick(TH.humor,3)+'</div></div></div><div class="row"><div class="c" style="background:rgba(10,132,255,.15)">'+K('Lebensweisheit','#64d2ff')+'<div style="font-size:4vh">'+pick(TH.weis,4)+'</div></div><div class="c" style="flex:1.4">'+K('Wissen des Tages','#64d2ff')+'<div class="hd">'+w.f+'</div>'+w.e+'<div class="m">Quelle: '+w.s+'</div></div></div>'};
+SC.rezept=function(){var r=pick(RZ,1),z='',k='',i;for(i=0;i<r.z.length;i++)z+='<div>'+r.z[i]+'</div>';for(i=0;i<6;i++)k+='<div style="margin-top:.8vh"><b style="color:'+r.c+'">'+(i+1)+'</b> '+r.k[i]+'</div>';
+ return '<div class="row"><div class="c" style="flex:1;text-align:center;background:rgba(255,159,10,.14)"><svg viewBox="0 0 200 140" width="100%" height="30vh"><ellipse cx="100" cy="80" rx="92" ry="50" fill="#f2f2f7"/><ellipse cx="100" cy="76" rx="74" ry="38" fill="'+r.c+'"/><circle cx="82" cy="70" r="8" fill="#fff" opacity=".35"/><circle cx="116" cy="82" r="9" fill="#30d158" opacity=".8"/><circle cx="100" cy="62" r="6" fill="#ffd60a"/></svg><div class="hd">'+r.n+'</div><span class="pl">'+r.p+' Portionen</span><span class="pl">'+r.t+'</span><span class="pl">'+r.s+'</span></div><div class="c" style="flex:1">'+K('Zutaten','#ff9f0a')+z+(r.g?'<div class="m" style="margin-top:1vh">'+r.g+'</div>':'')+'</div><div class="c" style="flex:1.4">'+K('Zubereitung','#ff9f0a')+k+'</div></div>'};
+SC.wlan=function(){var ok=[],i,sum=0,jt=0,f=0,l=P.length,last=l&&P[l-1],pts='',av,c=navigator.connection;for(i=0;i<l;i++){if(P[i].ok){ok.push(P[i].ms);sum+=P[i].ms}else f++}
+ for(i=1;i<ok.length;i++)jt+=Math.abs(ok[i]-ok[i-1]);var mx=Math.max.apply(null,ok.concat([100]));for(i=0;i<ok.length;i++)pts+=(i*(660/Math.max(ok.length-1,1)))+','+(80-ok[i]/mx*70)+' ';
+ var up=Math.round((Date.now()-PS)/60000);
+ return '<div class="row"><div class="c">'+K('Internet','#30d158')+'<div class="num">'+(last?(last.ok?'Online':'Offline'):'prüft')+'</div></div><div class="c">'+K('Antwortzeit','#64d2ff')+'<div class="num">'+(ok.length?Math.round(sum/ok.length):'–')+' <span class="m">ms</span></div></div><div class="c">'+K('Jitter','#bf5af2')+'<div class="num">'+(ok.length>1?Math.round(jt/(ok.length-1)):'–')+' <span class="m">ms</span></div></div><div class="c">'+K('Verfügbar','#30d158')+'<div class="num">'+(l?(100-f/l*100).toFixed(1):'–')+' <span class="m">%</span></div></div></div><div class="row" style="flex:1.4"><div class="c" style="flex:2">'+K('Verlauf der letzten Messungen','#30d158')+'<svg viewBox="0 0 660 90" width="100%" height="24vh"><polyline points="'+pts+'" fill="none" stroke="#30d158" stroke-width="3"/></svg></div><div class="c">Ausfälle seit Start: '+PF+'<br>Stabil seit: '+(up>=60?Math.floor(up/60)+' Std '+up%60+' Min':up+' Min')+'<br>Download: '+(c&&c.downlink?'ca. '+c.downlink+' Mbit/s (Schätzung)':'nicht verfügbar')+'</div></div><div class="row" style="flex:.7"><div class="c m">WLAN-Signal, Upload, Starlink-Antenne: nicht verfügbar. Der HTTP-Test (kein ICMP-Ping, Ziel Open-Meteo) misst die Verbindung des Tablets, nicht die Antenne.</div></div>'};
+SC.himmel=function(){var n=new Date(),a=mAge(n),su=sun(n),now=n.getHours()*60+n.getMinutes(),fr=su?(now-su.r)/(su.s-su.r):0.5,x=60+Math.max(-.05,Math.min(1.05,fr))*540,y=240-Math.sin(Math.max(0,Math.min(1,fr))*Math.PI)*190,day=fr>=0&&fr<=1,ns=night(),nf=mNext(14.765),nn=mNext(0),st='',i;
+ if(!day)for(i=0;i<10;i++)st+='<div class="st" style="left:'+(5+i*9.5)+'%;top:'+(10+(i*37)%30)+'%;-webkit-animation-delay:'+(i%4)+'s"></div>';
+ return '<div style="position:absolute;left:0;top:0;width:100%;height:100%;background:'+skyBg(n)+'"></div>'+st+'<div class="row" style="position:relative;flex:2.4;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;text-align:center"><div>'+(ns?'<div class="big clk2" style="font-size:34vh;opacity:.55">'+pad(n.getHours())+':'+pad(n.getMinutes())+'</div><div class="hd" style="opacity:.6">Gute Nacht, '+CFG.name+'.</div>':'<svg viewBox="0 0 660 260" width="100%" height="40vh"><path d="M60 240 Q330 -60 600 240" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="2" stroke-dasharray="6 8"/><circle cx="'+x+'" cy="'+y+'" r="'+(day?22:16)+'" fill="'+(day?'#ffd60a':'#e5e5ea')+'"/><line x1="40" y1="240" x2="620" y2="240" stroke="#fff" stroke-opacity=".3"/></svg>')+'</div></div>'+(ns?'':'<div class="row" style="position:relative;flex:.8"><div class="c">Aufgang<br>'+(su?mm(su.r):'–')+'</div><div class="c">Untergang<br>'+(su?mm(su.s):'–')+'</div><div class="c">Tageslänge<br>'+(su?Math.floor((su.s-su.r)/60)+' Std '+Math.round((su.s-su.r)%60)+' Min':'–')+'</div></div><div class="row" style="position:relative;flex:.8"><div class="c">Mond<br>'+mPct(a)+' %, '+mName(a)+'</div><div class="c">Nächster Vollmond<br>'+dd(nf)+'</div><div class="c">Nächster Neumond<br>'+dd(nn)+'</div></div>')};
+function skyBg(n){var h=n.getHours()+n.getMinutes()/60;return h<5||h>=21?'#05030f':h<7?'linear-gradient(#2b1650,#ff7a59)':h<17?'linear-gradient(#1b5fb8,#0b2a55)':h<19?'linear-gradient(#5a2a6a,#ff9f0a)':'linear-gradient(#1c1240,#8a3a5c)'}
+function night(){var h=new Date().getHours();return h>=22||h<6}
+var KB=['QWERTZUIOPÜ','ASDFGHJKLÖÄ','YXCVBNM','1234567890'],BUF='',KO=0,LT=0;
+SC.notiz=function(){var t=LG('todo')||[],i,s='',r,j,kb='',n=new Date();
+ for(i=0;i<t.length;i++)s+='<div class="ns" style="margin-top:1vh" onclick="tg('+i+')"><span class="dot" style="width:3vh;height:3vh;border:.4vh solid #ffd60a;'+(t[i].d?'background:#ffd60a':'')+'"></span><span style="'+(t[i].d?'text-decoration:line-through;color:#98989d':'')+'">'+t[i].t+'</span> <span class="m" onclick="event.stopPropagation();rm('+i+')">löschen</span></div>';
+ if(KO){for(r=0;r<4;r++){kb+='<div>';for(j=0;j<KB[r].length;j++)kb+='<span class="key ns" onclick="key(\''+KB[r].charAt(j)+'\')">'+KB[r].charAt(j)+'</span>';if(r==2)kb+='<span class="key ns" style="width:17vh" onclick="key(\'<\')">Rücktaste</span>';kb+='</div>'}kb+='<span class="key ns" style="width:50vh" onclick="key(\' \')">Leertaste</span><span class="key ns" style="width:17vh" onclick="key(\'X\')">Alles löschen</span><span class="key ns" style="width:17vh;background:#ffd60a;color:#000" onclick="key(\'E\')">Eingabe</span>'}
+ function cd(l,m,d,c){return '<div class="c">'+l+'<div class="num" style="color:'+c+'">'+nxt(m,d)+'</div><span class="m">Tage</span></div>'}
+ return '<div class="row" style="flex:'+(KO?1:2)+'"><div class="c" style="flex:1.6">'+K('Aufgaben und Einkauf','#ffd60a')+(s||'<span class="m">Noch nichts notiert.</span>')+'<div class="ns"><span class="btn" onclick="kbt()">'+(KO?'Fertig':'Neu')+'</span></div>'+(KO?'<div class="m">'+(BUF||'Text eingeben ...')+'</div>':'')+'</div>'+cd('Geburtstag',CFG.birth[1],CFG.birth[2],'#ff375f')+cd('Heiligabend',12,24,'#30d158')+cd('Silvester',12,31,'#ffd60a')+'</div>'+(KO?'<div class="c" style="text-align:center;-webkit-flex:1.6;flex:1.6">'+kb+'</div>':'')};
+function kbt(){KO=!KO;LT=Date.now();showScene(true)}
+function key(c){LT=Date.now();var t=LG('todo')||[];if(c=='<')BUF=BUF.slice(0,-1);else if(c=='X')BUF='';else if(c=='E'){if(BUF){t.push({t:BUF,d:0});LS('todo',t);BUF=''}}else BUF+=c;showScene(true)}
+function tg(i){var t=LG('todo');t[i].d=t[i].d?0:1;LS('todo',t);showScene(true)}
+function rm(i){var t=LG('todo');t.splice(i,1);LS('todo',t);showScene(true)}
+/* ===== Spotify: PKCE ohne Client Secret ===== */
+var SP={tok:LG('sp'),pl:null,pos:0,at:0,dur:0,going:0,cov:'',state:'Nicht verbunden'};
+function b64(b){var s='',a=new Uint8Array(b),i;for(i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function redir(){return location.origin+location.pathname}
+function spLogin(){var cs='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~',a=new Uint8Array(64),v='',i;crypto.getRandomValues(a);for(i=0;i<64;i++)v+=cs.charAt(a[i]%cs.length);LS('spv',v);
+ crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)).then(function(h){location.href='https://accounts.spotify.com/authorize?response_type=code&client_id='+CFG.spotifyId+'&scope='+encodeURIComponent('user-read-playback-state user-modify-playback-state')+'&redirect_uri='+encodeURIComponent(redir())+'&code_challenge_method=S256&code_challenge='+b64(h)})}
+function spTok(body,cb){xhr('POST','https://accounts.spotify.com/api/token',{'Content-Type':'application/x-www-form-urlencoded'},body+'&client_id='+CFG.spotifyId,function(t){var j=JSON.parse(t);SP.tok={a:j.access_token,r:j.refresh_token||(SP.tok&&SP.tok.r),e:Date.now()+j.expires_in*1000-60000};LS('sp',SP.tok);cb&&cb()},function(){SP.state='Anmeldung fehlgeschlagen'})}
+function spOk(cb){if(!SP.tok){SP.state='Nicht verbunden';spUi();return}if(Date.now()<SP.tok.e)cb();else spTok('grant_type=refresh_token&refresh_token='+encodeURIComponent(SP.tok.r),cb)}
+function spPoll(){spOk(function(){xhr('GET','https://api.spotify.com/v1/me/player',{Authorization:'Bearer '+SP.tok.a},null,function(t,s){if(s==204||!t){SP.pl=null;SP.state='Nichts läuft'}else{var j=JSON.parse(t),i=j.item;if(!i){SP.pl=null;SP.state='Nichts läuft'}else{SP.pl={t:i.name,a:i.artists.map(function(x){return x.name}).join(', '),b:i.album.name,c:i.album.images[0]&&i.album.images[0].url,d:j.device&&j.device.name};SP.pos=j.progress_ms;SP.dur=i.duration_ms;SP.at=Date.now();SP.going=j.is_playing}}spUi()},function(){SP.state='Nicht erreichbar';spUi()})})}
+function spCtl(m,p){LT=Date.now();spOk(function(){xhr(m,'https://api.spotify.com/v1/me/player/'+p,{Authorization:'Bearer '+SP.tok.a},null,function(){setTimeout(spPoll,600)},function(){})})}
+function spUi(){var p=SP.pl,v=$('vin');if(!v)return;v.className='vin'+(p&&SP.going?' go':'');$('mt').textContent=p?p.t:SP.state;$('ma').textContent=p?p.a:'';$('mb').textContent=p?p.b:'';$('md').textContent=p&&p.d?'Wiedergabe auf: '+p.d:'';$('mc').style.display=SP.tok?'none':'inline-block';
+ if(p&&p.c&&SP.cov!=p.c){SP.cov=p.c;$('vc').src=p.c;$('mic').src=p.c}$('ovm')&&($('ovm').textContent=p?p.t:SP.state);
+ $('mini').style.display=p&&SP.going&&cur!=CFG.SZENEN_REIHENFOLGE.indexOf('musik')?'-webkit-flex':'none';$('mit').textContent=p?p.t:'';$('mia').textContent=p?p.a:''}
+function spTick(){var p=SP.pl;if(!p||!$('pg'))return;var pos=Math.min(SP.dur,SP.pos+(SP.going?Date.now()-SP.at:0)),f=function(ms){var s=Math.floor(ms/1000);return Math.floor(s/60)+':'+pad(s%60)};$('pg').style.width=(SP.dur?pos/SP.dur*100:0)+'%';$('pt').textContent=f(pos)+' / '+f(SP.dur)}
+function musicHtml(){return '<div class="row"><div class="c" style="-webkit-flex:1.1;flex:1.1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center"><div class="vin" id="vin"><img id="vc" alt=""></div></div><div class="col"><div class="c" style="-webkit-flex:2;flex:2">'+K('Jetzt läuft','#30d158')+'<div class="hd" id="mt" style="font-size:6vh">Nicht verbunden</div><div id="ma" style="font-size:4vh"></div><div class="m" id="mb"></div><div style="height:1vh;background:rgba(255,255,255,.2);border-radius:1vh;margin:3vh 0 1vh"><div id="pg" style="height:1vh;width:0;background:#30d158;border-radius:1vh"></div></div><div class="m" id="pt"></div><div class="m" id="md"></div></div><div class="c ns" style="text-align:center"><span class="btn" onclick="spCtl(\'POST\',\'previous\')">Zurück</span><span class="btn" onclick="spCtl(\'PUT\',\'play\')">Play</span><span class="btn" onclick="spCtl(\'PUT\',\'pause\')">Pause</span><span class="btn" onclick="spCtl(\'POST\',\'next\')">Weiter</span><span class="btn" id="mc" style="background:#30d158;color:#000" onclick="spLogin()">Verbinden</span></div></div></div>'}
+/* ===== Szenen-Engine: EIN Timer, ein Intervall je Datenquelle ===== */
+var META={uebersicht:['#bf5af2','Übersicht'],kalender:['#ff453a','Kalender'],wetter:['#0a84ff','Wetter'],news:['#ff375f','Nachrichten'],horo:['#bf5af2','Horoskop'],gedanke:['#ffd60a','Tagesgedanke'],rezept:['#ff9f0a','Rezept'],musik:['#30d158','Jetzt läuft'],wlan:['#30d158','WLAN'],himmel:['#ff9f0a','Himmel'],notiz:['#ffd60a','Merkzettel']};
+var ORD=CFG.SZENEN_REIHENFOLGE,cur=-1,t0=0,dur=20000,MOT=Date.now(),DIM=0;
+function build(){var i,s='',d='';for(i=0;i<ORD.length;i++){s+='<div class="sc" id="s_'+ORD[i]+'" style="background:radial-gradient(ellipse at 20% 0%,'+META[ORD[i]][0]+'33,#000 65%)"></div>';d+='<i></i>'}$('stage').innerHTML=s;$('dots').innerHTML=d;
+ $('s_musik').innerHTML=musicHtml();var ds=$('dots').children;for(i=0;i<ds.length;i++)(function(k){ds[k].onclick=function(e){e.stopPropagation();go(k)}})(i)}
+function fit(el){var f=parseFloat(el.style.fontSize),g=0;while(el.scrollHeight>el.clientHeight+1&&g++<12&&f>2.4){f-=.3;el.style.fontSize=f+'vh'}}
+function showScene(keep){var k=ORD[cur],e=$('s_'+k);if(k!='musik'){e.innerHTML=SC[k]();var f=e.querySelectorAll('.fit'),i;for(i=0;i<f.length;i++)fit(f[i])}else spUi();
+ if(!keep){dur=Math.max(CFG.dauer.min,Math.min(CFG.dauer.max,12+3*Math.ceil(e.textContent.length/50)))*1000}}
+function go(i){var ds=$('dots').children,b=$('bar');if(night()&&ORD[i]!='himmel')i=ORD.indexOf('himmel');
+ if(cur>=0){$('s_'+ORD[cur]).className='sc';ds[cur].className='';ds[cur].style.background=''}cur=(i+ORD.length)%ORD.length;TO=-1;
+ var e=$('s_'+ORD[cur]);e.className='sc on';ds[cur].className='a';ds[cur].style.background=META[ORD[cur]][0];showScene(false);t0=Date.now();
+ b.style.webkitTransition=b.style.transition='none';b.style.webkitTransform=b.style.transform='scaleX(0)';b.offsetWidth;b.style.background=META[ORD[cur]][0];b.style.webkitTransition=b.style.transition='transform '+dur/1000+'s linear';b.style.webkitTransform=b.style.transform='scaleX(1)';spUi()}
+function paused(){return TO>=0||KO||Date.now()-LT<20000}
+function tick(){var n=new Date(),c=$('clk'),i,e=document.querySelectorAll('.clk2');c.textContent=pad(n.getHours())+':'+pad(n.getMinutes());for(i=0;i<e.length;i++)if(n.getSeconds()==0)e[i].innerHTML=pad(n.getHours())+'<span style="color:#ff453a">:</span>'+pad(n.getMinutes());
+ spTick();var k=ORD[cur];if(DIRTY[k]&&!paused()){DIRTY[k]=0;showScene(true)}
+ if(night()&&k!='himmel'){go(ORD.indexOf('himmel'));return}
+ if(paused()){t0=Date.now();var b=$('bar');b.style.webkitTransition=b.style.transition='none';b.style.webkitTransform=b.style.transform='scaleX(0)';return}
+ if(Date.now()-t0>=dur)go(cur+1);else if(Date.now()-t0<1500){var b2=$('bar');if(b2.style.transform=='scaleX(0)'){b2.style.webkitTransition=b2.style.transition='transform '+dur/1000+'s linear';b2.style.webkitTransform=b2.style.transform='scaleX(1)'}}
+ if(window.fully){var idle=Date.now()-MOT;if(idle>120000&&DIM<2){DIM=2;try{fully.turnScreenOff()}catch(x){}}else if(idle>30000&&!DIM){DIM=1;try{fully.setScreenBrightness(8)}catch(x){}}}}
+function onMot(){MOT=Date.now();if(window.fully&&DIM){try{if(DIM==2)fully.turnScreenOn();fully.setScreenBrightness(160)}catch(x){}DIM=0}}
+/* Bedienung: Tippen rechts/links, Wischen; Tarot, Tasten, Notizen haben Vorrang (.ns) */
+var tx=0,ty=0,tt=0,lastT=0;
+function isNs(e){var n=e.target;while(n&&n!==document.body){if(n.className&&(''+n.className).indexOf('ns')>-1||n.id=='mini')return true;n=n.parentNode}return false}
+document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;ty=e.touches[0].clientY;tt=Date.now();onMot()},false);
+document.addEventListener('touchend',function(e){lastT=Date.now();if(isNs(e))return;var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(Math.abs(dx)>80&&Math.abs(dx)>Math.abs(dy))go(cur+(dx<0?1:-1));else if(Math.abs(dx)<20&&Math.abs(dy)<20)go(cur+(t.clientX>window.innerWidth/2?1:-1))},false);
+document.addEventListener('click',function(e){if(Date.now()-lastT<700||isNs(e))return;go(cur+(e.clientX>window.innerWidth/2?1:-1))},false);
+/* ===== Start ===== */
+build();
+var m=/[?&]code=([^&]+)/.exec(location.search);
+if(m){try{history.replaceState(null,'',location.pathname)}catch(e){}spTok('grant_type=authorization_code&code='+encodeURIComponent(m[1])+'&redirect_uri='+encodeURIComponent(redir())+'&code_verifier='+encodeURIComponent(LG('spv')||''),spPoll)}
+go(0);setInterval(tick,1000);
+hourly(loadW,CFG.iv.wetter);hourly(loadN,CFG.iv.news);ping();setInterval(ping,CFG.iv.ping);spPoll();setInterval(spPoll,CFG.iv.spotify);
+if(window.fully){try{fully.bind('onMotion','onMot();');fully.startMotionDetection()}catch(e){}}
 </script></body></html>
